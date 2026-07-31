@@ -75,13 +75,12 @@ final class GameScene: SKScene {
         }
     }
 
+    /// Tile-based arena background (Wasteland/Interior tileset per map).
+    /// backgroundColor was already set to startingMapID's tint in didMove,
+    /// before this runs, so it still shows through as a fallback on the rare
+    /// chance the tileset image can't be loaded.
     private func setupArena() {
-        let border = SKShapeNode(rectOf: size)
-        border.strokeColor = SKColor.white.withAlphaComponent(0.3)
-        border.lineWidth = 3
-        border.fillColor = .clear
-        border.zPosition = 0
-        worldLayer.addChild(border)
+        worldLayer.addChild(TileMapBuilder.build(for: startingMapID, size: size))
     }
 
     private func setupPlayer() {
@@ -195,6 +194,7 @@ final class GameScene: SKScene {
 
         if controlScheme.isFiring, !aimVector.isZero, weapon.fire(at: currentTime) {
             spawnShots(direction: aimVector, weapon: weapon)
+            player.playShootAnimation(for: weapon.weaponType)
             AudioManagerProvider.shared.playSFX("weapon_fire_\(weapon.weaponType.rawValue)")
         }
     }
@@ -314,10 +314,7 @@ final class GameScene: SKScene {
         waveManager.registerDeath(of: enemy)
         spawnCoin(at: enemy.position)
         AudioManagerProvider.shared.playSFX("zombie_death")
-
-        let shrink = SKAction.scale(to: 0, duration: Balance.zombieDeathEffectDuration)
-        let fade = SKAction.fadeOut(withDuration: Balance.zombieDeathEffectDuration)
-        enemy.run(.sequence([.group([shrink, fade]), .removeFromParent()]))
+        enemy.playDeathAnimation()
     }
 
     // MARK: - Coins
@@ -408,6 +405,7 @@ final class GameScene: SKScene {
     private func checkPlayerDeath() {
         guard !player.isAlive, !gameState.isGameOver else { return }
         gameState.isGameOver = true
+        player.playDeathAnimation()
         hud.showGameOver(round: waveManager.currentRound, hasAnySave: SaveManager.hasAnySave())
     }
 

@@ -23,8 +23,21 @@ final class PauseMenuScene: SKScene {
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
         scaleMode = .resizeFill
         backgroundColor = SKColor(red: 0.05, green: 0.05, blue: 0.08, alpha: 1.0)
+        addPanelBackground()
         addChild(contentLayer)
         rebuild()
+    }
+
+    /// Same panel1 treatment as ShopScene, since this uses the exact same
+    /// pause mechanism. Skipped, leaving the flat backgroundColor, if
+    /// panel1 fails to load.
+    private func addPanelBackground() {
+        guard let panel = AssetProvider.makeResizablePanel(
+            sheetName: "panel1", subdirectory: "Assets/UI",
+            size: CGSize(width: size.width - 32, height: size.height - 32)
+        ) else { return }
+        panel.zPosition = -1
+        addChild(panel)
     }
 
     private func rebuild() {

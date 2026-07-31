@@ -51,6 +51,36 @@ enum WeaponType: String, Codable, CaseIterable {
         case .arcCannon: return ArcCannon()
         }
     }
+
+    /// The _Shoot spritesheet played on fire. Only 6 unique sheets exist for
+    /// 8 weapon types (no dedicated SMG or Arc Cannon art), so SMG reuses
+    /// the revolver sheet and LMG/Arc Cannon reuse Rifle/Sniper respectively
+    /// (long-gun and precision/beam family resemblance). _Flicker sheets are
+    /// deliberately not wired: every _Flicker sheet, including the
+    /// melee-only Axe_Flicker, measures the same 7 frames — a melee weapon
+    /// has no muzzle, so this reads as a shared idle/glow effect rather than
+    /// a muzzle flash, not worth wiring for this pass.
+    var shootSheet: SpriteSheetFrames {
+        let subdirectory = "Assets/Weapons"
+        switch self {
+        case .pistol:
+            return SpriteSheetFrames(sheetName: "pistol_shoot", frameSize: Balance.weaponFrameSize, frameCount: Balance.pistolShootFrameCount, subdirectory: subdirectory, timePerFrame: Balance.weaponShootFrameTime)
+        case .smg:
+            return SpriteSheetFrames(sheetName: "revolver_shoot", frameSize: Balance.weaponFrameSize, frameCount: Balance.smgShootFrameCount, subdirectory: subdirectory, timePerFrame: Balance.weaponShootFrameTime)
+        case .shotgun:
+            return SpriteSheetFrames(sheetName: "shotgun_shoot", frameSize: Balance.weaponFrameSize, frameCount: Balance.shotgunShootFrameCount, subdirectory: subdirectory, timePerFrame: Balance.weaponShootFrameTime)
+        case .assaultRifle:
+            return SpriteSheetFrames(sheetName: "rifle_shoot", frameSize: Balance.weaponFrameSize, frameCount: Balance.assaultRifleShootFrameCount, subdirectory: subdirectory, timePerFrame: Balance.weaponShootFrameTime)
+        case .sniper:
+            return SpriteSheetFrames(sheetName: "sniper_shoot", frameSize: Balance.weaponFrameSize, frameCount: Balance.sniperShootFrameCount, subdirectory: subdirectory, timePerFrame: Balance.weaponShootFrameTime)
+        case .lmg:
+            return SpriteSheetFrames(sheetName: "rifle_shoot", frameSize: Balance.weaponFrameSize, frameCount: Balance.lmgShootFrameCount, subdirectory: subdirectory, timePerFrame: Balance.weaponShootFrameTime)
+        case .grenadeLauncher:
+            return SpriteSheetFrames(sheetName: "rocketlauncher_shoot", frameSize: Balance.weaponFrameSize, frameCount: Balance.grenadeLauncherShootFrameCount, subdirectory: subdirectory, timePerFrame: Balance.weaponShootFrameTime)
+        case .arcCannon:
+            return SpriteSheetFrames(sheetName: "sniper_shoot", frameSize: Balance.weaponFrameSize, frameCount: Balance.arcCannonShootFrameCount, subdirectory: subdirectory, timePerFrame: Balance.weaponShootFrameTime)
+        }
+    }
 }
 
 /// Two weapon slots plus which one is active. Slot 0 always starts with the

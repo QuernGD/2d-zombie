@@ -1,42 +1,57 @@
 # Assets
 
-Drop real sprite images in here (or directly into `Assets.xcassets`).
-
 This folder is added to the Xcode project as a **folder reference** (shows
-up blue, not yellow, in the navigator), so anything you place inside it is
-automatically copied into the app bundle — no project file edits needed.
+up blue, not yellow, in the navigator), so anything placed inside it is
+automatically copied into the app bundle, preserving its subfolder
+structure — no project file edits needed.
 
-## Naming convention
+Because a folder reference preserves that on-disk structure, a bare
+`UIImage(named:)` lookup (which only searches the bundle root and compiled
+asset catalogs) can't find anything nested in here. `AssetProvider`'s
+`resolveImage` works around this by trying an explicit bundle path
+(`Bundle.main.url(forResource:withExtension:subdirectory:)`) first and only
+falling back to `UIImage(named:)` for `Assets.xcassets` entries.
 
-`AssetProvider.swift` (in `Support/`) looks up textures by name. To replace
-a placeholder shape with a real sprite, add an image whose name matches the
-`EntityVisualKind` case, either here or in `Assets.xcassets`:
+## Layout (as of Phase 4)
 
-| Entity | Expected image name |
-|---|---|
-| Player | `player` |
-| Walker (zombie) | `walker` |
-| Bullet | `bullet` |
-| Coin | `coin` |
+```
+Assets/
+  Characters/
+    Player/          idle, run, hit, knocked, death        (32x32 frames)
+    Zombie1..4/       idle, run, hit, knocked, death1[, death2]
+  Weapons/            pistol_shoot, revolver_shoot, rifle_shoot,
+                      rocketlauncher_shoot, shotgun_shoot, sniper_shoot
+  Items/              coin, medkit, ammo                    (16x16 frames)
+  Tiles/              wasteland, interior                   (32x32 tilesets)
+  UI/                 panel1, panel2, health_bar_fillers
+  ZOMBIEPACK_LICENSE.txt
+```
 
-As soon as an image with that name resolves (via `Assets.xcassets`, or a
-same-named file dropped directly in this folder), `AssetProvider` swaps
-the placeholder shape for the real sprite — no other code changes
-required. Add new cases to `EntityVisualKind` for future entity types (new
-enemy types, weapons, etc.) following the same pattern.
+Every file above (except the tilesets and the two panel/health-bar sheets)
+is a horizontal-strip spritesheet: fixed-size square frames side by side,
+no padding, so frame count = sheet width ÷ frame size. There are no
+individual numbered frame files in this project anymore — Phase 2's
+`skeleton-idle_0...16`-style loose frames were removed once the real
+character art (delivered as single sheets) replaced them.
 
-Note: this folder preserves its own name and any subfolders inside the
-app bundle (that's what a folder reference does), so `AssetProvider`
-looks images up via an explicit bundle path first and only falls back to
-a bare `UIImage(named:)` lookup for `Assets.xcassets` entries — see
-`Assets/Enemies/Zombie/README.md` for the concrete case that surfaced
-this.
+## Two loading paths
 
-## Animated sprites
+`AssetProvider.swift` (in `Support/`) supports both:
 
-For numbered animation frame sequences (idle/move/attack cycles, not just
-a single static image), use `AssetProvider.loadTextures` /
-`makeAnimatedNode(for:frames:radius:)` with an `AnimationFrameSequence`
-instead of the single-image path above. See
-`Assets/Enemies/Zombie/README.md` for a concrete example (the Walker's
-idle/move/attack frames).
+- **Single static image**, looked up by `EntityVisualKind` case name
+  (`player`, `walker`, `bullet`) via `makeNode(for:radius:fillColor:)` —
+  falls back to a placeholder colored circle if no image resolves.
+- **Spritesheet animation**, via `SpriteSheetFrames` +
+  `loadSpriteSheetTextures` / `makeAnimatedNode(sheet:size:fallbackColor:)`
+  — this is what every file listed above uses. Give it the bare sheet name
+  (no extension), frame size, frame count, and subdirectory (e.g.
+  `"Assets/Characters/Zombie1"`), and it slices the sheet into textures.
+- Tile-based art (the two tilesets) instead goes through
+  `AssetProvider.loadTileTexture(sheetName:subdirectory:tileSize:column:row:)`,
+  a column/row grid extractor used by `Systems/TileMapBuilder.swift` — see
+  the root README's Phase 4 section for the tile-index caveats.
+
+The legacy numbered-frame path (`AnimationFrameSequence` /
+`loadTextures` / `makeAnimatedNode(for:frames:radius:fillColor:)`) still
+exists for backward compatibility but has no current callers now that
+Walker/Player have moved to spritesheets.

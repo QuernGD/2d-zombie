@@ -3,17 +3,12 @@
 A top-down, twin-stick zombie survival shooter built with SpriteKit for
 iOS 17+. Phase 1 was the core loop (move/aim/shoot/survive rounds/die).
 Phase 2 added the economy: coins, a round-end shop, 8 weapons, overclocking,
-perks, and animated zombie sprites. Phase 3 (this pass) adds a save system
-(3 manual-save slots), a real main menu, map/difficulty select, a full
-settings screen, and an in-run pause menu.
-
-## Zombie sprites are live
-
-The `skeleton-idle`/`skeleton-move`/`skeleton-attack` frames arrived and
-are checked into `ZombieSurvival/Assets/Enemies/Zombie/`. Getting them to
-actually resolve at runtime surfaced a real bug (see "Bundle path bug"
-below) — it's fixed, and `Walker` now animates idle/move/attack from real
-art instead of the placeholder circle.
+perks, and animated zombie sprites. Phase 3 added a save system (3
+manual-save slots), a real main menu, map/difficulty select, a full
+settings screen, and an in-run pause menu. Phase 4 (this pass) replaces all
+of Phase 2's placeholder/skeleton art with a full spritesheet-based art
+pack: real Player/Zombie(x4) character animations, weapon fire animations,
+tile-based arenas for both maps, 9-sliced UI panels, and a real coin icon.
 
 ## Running it
 
@@ -141,39 +136,33 @@ leaving the shop.
   landscape, tight on smaller iPhones. A scrollable list would be the
   right follow-up; out of scope for this pass.
 
-### Zombie animation
+### Zombie animation (superseded by Phase 4 — kept for history)
 
-`Walker` loads `skeleton-idle_0...16`, `skeleton-move_0...16`,
-`skeleton-attack_0...8` from `Assets/Enemies/Zombie/` and drives
-idle/move/attack off of them. No death animation was supplied — on death,
-`Walker` plays a code-driven 0.25s scale-down + fade-out and removes
-itself, exactly as asked. All three animation sequences load up-front
-per-instance and gracefully no-op back to the placeholder circle if any
-frame in a sequence is missing, so a partial art drop never animates
-through blank frames or gets a zombie stuck mid-animation.
+Originally `Walker` loaded `skeleton-idle_0...16`, `skeleton-move_0...16`,
+`skeleton-attack_0...8` from `Assets/Enemies/Zombie/` (now removed — see
+the Phase 4 section below for the real character-sheet-based animation
+that replaced this).
 
 #### Bundle path bug (found and fixed while wiring the real art in)
 
 `ZombieSurvival/Assets/` is an Xcode **folder reference** (blue folder),
 which — unlike a group — preserves its on-disk directory structure inside
-the built app bundle instead of flattening it. That means
-`Assets/Enemies/Zombie/skeleton-idle_0.png` lands at that same nested path
-inside the bundle, not at the bundle root. `UIImage(named:)` with a bare
-filename only searches the bundle root and compiled asset catalogs
+the built app bundle instead of flattening it. That means a file at
+`Assets/<subfolder>/<name>.png` lands at that same nested path inside the
+bundle, not at the bundle root. `UIImage(named:)` with a bare filename
+only searches the bundle root and compiled asset catalogs
 (`Assets.xcassets`) — it does **not** recursively search subdirectories,
-so the original `UIImage(named: "skeleton-idle_0")` lookup would have
-silently failed once real frames existed, even though everything looked
-correctly wired.
+so a bare `UIImage(named: "skeleton-idle_0")` lookup silently failed once
+real frames existed, even though everything looked correctly wired.
 
 Fixed in `AssetProvider.resolveImage`: it now tries
 `Bundle.main.url(forResource:withExtension:subdirectory:)` with the
-frame's actual bundle-relative folder first (`Assets/Enemies/Zombie` for
-the zombie, `Assets` for anything dropped loose at the top level), and
-only falls back to the bare `UIImage(named:)` lookup, which is what
-actually resolves `Assets.xcassets` entries. `AnimationFrameSequence` grew
-an optional `subdirectory` field to carry this. This also retroactively
-fixes the same latent bug for `player`/`walker`/`bullet`/`coin` if anyone
-drops a loose image straight into `Assets/` rather than into
+image's actual bundle-relative folder first, and only falls back to the
+bare `UIImage(named:)` lookup, which is what actually resolves
+`Assets.xcassets` entries. `AnimationFrameSequence` (and, as of Phase 4,
+`SpriteSheetFrames`) carry an optional `subdirectory` field for this. This
+also retroactively fixes the same latent bug for `player`/`walker`/`bullet`
+if anyone drops a loose image straight into `Assets/` rather than into
 `Assets.xcassets`.
 
 ## Architecture — Phase 3 (new/changed this pass)
@@ -290,6 +279,167 @@ already-set-up instance (this bit Phase 2's shop too — see below). A
   deliberately; a confirm-overwrite step would be the natural next
   addition.
 
+## Architecture — Phase 4 (new/changed this pass)
+
+| File | Responsibility |
+|---|---|
+| `Support/AssetProvider.swift` | Extended with `SpriteSheetFrames` + `loadSpriteSheetTextures` (horizontal-strip slicer) and `makeAnimatedNode(sheet:size:fallbackColor:)`, plus `loadTileTexture` (grid-cell extractor) and `makeResizablePanel` (9-slice via `SKSpriteNode.centerRect`). All reuse the same `resolveImage` bundle-path lookup as the Phase 2 numbered-frame path, which is left fully intact for backward compatibility. Every texture handed out now also gets `.filteringMode = .nearest`, fixing blurry-scaled pixel art. |
+| `Systems/TileMapBuilder.swift` | New. Builds a tile-based arena (floor/wall/obstacle layout) from the Wasteland or Interior tileset per map. |
+| `Entities/Walker.swift` | Rewritten: `zombieVariant: Int` (1-4, random per spawn), loads idle/run/hit/knocked/death(s) from `Assets/Characters/Zombie<variant>/`, plays a real death animation (falls back to the old scale+fade only if a variant's frames fail to load). |
+| `Entities/Player.swift` | Same idle/run/hit/death animation treatment from `Assets/Characters/Player/`, plus a small weapon-fire overlay sprite that plays the active weapon's `_Shoot` animation once per shot. |
+| `Entities/WeaponInventory.swift` | `WeaponType` gained a `shootSheet` computed property mapping each of the 8 weapon types to one of 6 `_Shoot` sheets (see below). |
+| `Entities/CoinPickup.swift` | Now renders the Items pack's "Scraps" icon (`Assets/Items/coin.png`) via the new sheet-animation path instead of a plain yellow circle. |
+| `HUD/HUD.swift`, `Scenes/ShopScene.swift`, `Scenes/SettingsScene.swift`, `Scenes/PauseMenuScene.swift` | Health bar and dialog backgrounds now use 9-sliced `panel1`/`panel2` art and color-swatch health fill textures instead of flat `SKShapeNode` fills. |
+
+### Spritesheet support
+
+Every Phase 4 art file (characters, weapons, effects, items) ships as a
+single horizontal-strip sheet: fixed-size square frames side by side, no
+padding, so `frame count = sheet width ÷ frame size`. `AssetProvider` slices
+these with `CGImage.cropping(to:)` in `loadSpriteSheetTextures`, which — per
+the brief's explicit instruction — reuses the exact same `resolveImage`
+bundle-path lookup as the Phase 2 numbered-frame loader, so folder-reference
+pathing works identically for both. The old `AnimationFrameSequence` /
+`loadTextures` / `makeAnimatedNode(for:frames:radius:fillColor:)` path is
+untouched and still compiles; it just has no callers left now that
+Walker/Player have moved to sheets.
+
+Tilesets use a different extractor, `loadTileTexture(sheetName:subdirectory:tileSize:column:row:)`,
+since they're addressed by (column, row) grid cell rather than a single
+horizontal frame index.
+
+### Frame-count discrepancies vs. the brief
+
+Several of the delivered files don't match the brief's stated frame counts.
+Measured directly (via `file` + visual inspection) and used as ground
+truth instead of the brief's numbers:
+
+| Sheet | Brief said | Measured (used) |
+|---|---|---|
+| Bullet impact (20x20) | 3 frames | **5 frames** (100x20) |
+| Explosion (48x48) | 10 frames | **7 frames** (336x48) |
+| Pop-up 1/2/3 (20x20) | 3 frames each | **5 frames** each (100x20) |
+| Items (16x16) | 3 frames each | **7 frames** each (112x16), and there are 23 items, not 21 |
+
+Character sheets (Player + Zombie1-4, all idle/run/hit/knocked/death) and
+weapon `_Shoot` sheets matched the brief exactly.
+
+### Zombie variant → enemy tier
+
+**There is no tier mapping** — Walker is still the only enemy type (no
+Runner/Brute/Spitter subclasses exist), so `zombieVariant` (1-4) is
+assigned **randomly per spawn** rather than tied to any tier. If/when
+enemy tiers are introduced, mapping a tier to a variant would be a small
+change in `WaveManager.spawnOne()`.
+
+### Hit vs. Knocked (a judgment call, since no zombie "attack" sheet exists)
+
+The delivered character sheets have Idle/Run/Hit/Knocked/Death — no
+"attack" sheet. So contact damage (the zombie biting the player) still has
+no unique animation, exactly as in Phases 1-3 — it's pure instant math.
+Hit and Knocked were repurposed instead as damage-*reaction* flinches on
+the zombie itself: a single hit dealing at least `Balance.zombieKnockedDamageThreshold`
+(50) damage plays Knocked, anything lighter plays Hit. Player only got Hit
+wired (the brief lists no `Player_knocked` sheet).
+
+### Weapon `_Shoot` → `WeaponType` mapping
+
+Only 6 unique `_Shoot` sheets exist for 8 weapon types, so two reuse
+another weapon's sheet:
+
+| WeaponType | Sheet used | Note |
+|---|---|---|
+| pistol | `pistol_shoot` | exact |
+| shotgun | `shotgun_shoot` (Pump) | exact |
+| assaultRifle | `rifle_shoot` | exact |
+| sniper | `sniper_shoot` | exact |
+| grenadeLauncher | `rocketlauncher_shoot` | closest fit (explosive launcher) |
+| smg | `revolver_shoot` | **reused** — no dedicated SMG sheet |
+| lmg | `rifle_shoot` | **reused** — shared with assaultRifle (long-gun family) |
+| arcCannon | `sniper_shoot` | **reused** — shared with sniper (precision/beam motif) |
+
+`_Flicker` sheets (one per weapon, plus a melee-only `Axe_Flicker`) were
+**not wired**. Every `_Flicker` sheet measures the same 7 frames (224x32),
+including the melee axe's — a melee weapon has no muzzle, so a uniform
+frame count across melee and ranged reads as a shared idle/glow effect
+rather than a muzzle flash. Not worth wiring on that evidence.
+
+### Tile-based arenas — best-guess tile indices, please verify in Xcode
+
+Neither `Wasteland_Tileset_32x32.png` (9x19 tiles) nor
+`Interior_Tileset_32x32.png` (10x17 tiles) ships with a documented
+tile-index legend. The floor/wall/obstacle column/row picks in
+`Balance.swift` (`wastelandFloorTile`, `interiorWallTile`, etc.) are an
+honest best-effort guess from eyeballing the rendered sheets, **not
+verified pixel-exact** — treat them as a starting point to look at in
+Xcode and adjust, not as ground truth. They're isolated to a handful of
+`TileCoord` constants specifically so nudging them is a one-line change
+per tile role.
+
+`TileMapBuilder` is purely decorative: it draws a full floor grid, a
+wall ring around the border, and a handful of scattered obstacle tiles at
+fixed fractional positions — there is **no collision** added, so
+walls/obstacles don't block player or zombie movement. Adding that wasn't
+asked for and would be a meaningfully larger change (physics bodies, a
+`Enemy`-side pathfinding rewrite for straight-line pursuit to route around
+obstacles) than "arrange some tiles."
+
+Map-to-tileset assignment: `.original` ("The Yard") → Wasteland,
+`.ashyard` ("Ashyard") → Interior. Both maps now have genuinely different
+geometry, unlike Phase 3 (background tint only). One naming quirk worth
+flagging: "Ashyard" implies an outdoor space but is mapped to the *indoor*
+tileset (Wasteland was a better outdoor fit for "The Yard") — the name and
+the visuals no longer quite agree; a rename is the natural follow-up.
+
+### UI: 9-sliced panels + health bar
+
+`AssetProvider.makeResizablePanel` wraps `SKSpriteNode.centerRect` so
+`panel1.png`/`panel2.png` (96x96, a clean 3x3 grid of 32px cells) stretch
+only in the middle, keeping their riveted-metal corners crisp at any size.
+Applied to: the HUD health bar background, and a full dialog background in
+`ShopScene`/`PauseMenuScene` (panel1) and `SettingsScene` (panel2, for
+visual variety). The health bar *fill* instead uses `health_bar_fillers.png`
+(4 solid 64x64 color swatches: red/maroon, blue, orange/brown, green) —
+solid color needs no 9-slicing, so it's just scaled via `xScale` the same
+way the old `SKShapeNode` fill was, swapping texture at the same
+healthy/medium/critical thresholds the HUD already used. Both paths fall
+back to the pre-Phase-4 plain-shape look if their sheet fails to load.
+HUD ammo/health icons (mentioned as "if useful" in the brief) were **not**
+added — the existing text-based ammo counter was already clear, and icons
+would have meant reworking the HUD's tight label layout for a
+nice-to-have; skipped to keep this pass scoped.
+
+### Coin icon
+
+No literal coin exists in the Items pack. Used **Scraps** (a grey/silver
+metal-scrap-pile icon) rather than the brief's suggested "blueprint" —
+loose metal scrap reads more like currency than a document icon. Like
+every Items sheet it's actually a short animated strip (7 frames), not a
+static image, so `CoinPickup` now plays it via the sheet-animation path.
+This also incidentally fixed a real path bug: the old `AssetProvider.makeNode(for:.coin,...)`
+hardcoded the top-level `Assets/` folder for every `EntityVisualKind`,
+which would never have found `coin.png` at `Assets/Items/coin.png` — fixed
+by having `CoinPickup` call the sheet API directly with an explicit
+subdirectory, bypassing that hardcoded path entirely (and removing the
+now-unused `.coin` case from `EntityVisualKind`).
+
+### Manual verification still needed in Xcode
+
+- **Tile indices** (floor/wall/obstacle column/row for both tilesets) —
+  the single biggest thing to eyeball; see above.
+- **Weapon fire overlay positioning/scale** — the muzzle sprite is placed
+  at a fixed offset forward of the player; whether it reads well at actual
+  device resolution needs a look.
+- **Zombie/Player animation frame timings** (`Balance.characterIdleFrameTime`
+  etc.) are reasonable guesses, not motion-tested.
+- **9-slice panel `centerRect`** assumes a clean 32px-bordered 3x3 grid on
+  a 96x96 sheet — worth a visual check that the corners don't look
+  stretched.
+- General **first real build/run** — this environment has no Xcode/
+  `xcodebuild`, so none of Phase 4 has been compiled or run on a simulator;
+  everything above was verified by direct pixel measurement and careful
+  manual code review only.
+
 ## Balance as implemented (Phase 1, unchanged)
 
 - Zombie health: 150 base, +100 per round through round 9 (round 9 = 950),
@@ -323,6 +473,17 @@ All Phase 2 weapon/coin/overclock/perk numbers are placeholders in
 - **Shop and Settings layouts are fixed, non-scrolling grids** — comfortable
   on iPad landscape, tight on smaller iPhones. A scrollable list would be
   the natural follow-up for both; out of scope for this pass.
+- **Effects sprites (bullet impact, explosion, pop-ups) are measured and
+  have Balance.swift frame constants, but aren't wired to any gameplay
+  event** — the Phase 4 brief listed them as part of the delivered pack but
+  didn't ask for them to be triggered on hit/explosion/pickup, so they
+  aren't yet. The AoE explosion and chain-lightning arc still use their
+  Phase 2 placeholder shapes (a fading ring / a fading line).
+- **Tile-based arenas have no collision** — `TileMapBuilder`'s walls and
+  obstacles are purely decorative; player/zombie movement is unaffected by
+  them. See the Phase 4 section above.
+- **Tile indices are an unverified best guess** — see the Phase 4 section
+  above for specifics on what to check in Xcode.
 - Not compiled with `xcodebuild`/Xcode in this environment (Linux, no
   Apple toolchain) — reviewed carefully by hand (including catching and
   fixing two real bugs along the way: the `didMove(to:)` re-presentation

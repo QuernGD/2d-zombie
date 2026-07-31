@@ -15,6 +15,66 @@ struct HUDDisplayState {
     let showSwapButton: Bool
 }
 
+/// Displays health as a stretched color-swatch sprite (health_bar_fillers.png,
+/// Phase 4), falling back to a plain colored rect if that sheet fails to
+/// load. Either way, the same xScale-based "shrink from the right, left edge
+/// fixed" animation applies.
+private final class HealthFillNode: SKNode {
+    private let width: CGFloat
+    private let sprite: SKSpriteNode?
+    private let shape: SKShapeNode?
+    private let healthyTexture: SKTexture?
+    private let mediumTexture: SKTexture?
+    private let criticalTexture: SKTexture?
+
+    init(width: CGFloat, height: CGFloat) {
+        self.width = width
+        let textures = AssetProvider.loadSpriteSheetTextures(SpriteSheetFrames(
+            sheetName: "health_bar_fillers",
+            frameSize: Balance.healthBarFillerSwatchSize,
+            frameCount: Balance.healthBarFillerSwatchCount,
+            subdirectory: "Assets/UI"
+        ))
+        if let textures, textures.count == Balance.healthBarFillerSwatchCount {
+            // Swatch order (left to right): red/maroon, blue, orange/brown, green.
+            criticalTexture = textures[0]
+            mediumTexture = textures[2]
+            healthyTexture = textures[3]
+            sprite = SKSpriteNode(texture: healthyTexture, size: CGSize(width: width, height: height))
+            shape = nil
+        } else {
+            healthyTexture = nil
+            mediumTexture = nil
+            criticalTexture = nil
+            sprite = nil
+            let node = SKShapeNode(rectOf: CGSize(width: width, height: height), cornerRadius: 3)
+            node.strokeColor = .clear
+            shape = node
+        }
+        super.init()
+        if let sprite { addChild(sprite) }
+        if let shape { addChild(shape) }
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func update(percent: CGFloat) {
+        let clamped = max(0, min(1, percent))
+        let offsetX = -(width / 2) * (1 - clamped)
+        if let sprite {
+            sprite.xScale = clamped
+            sprite.position.x = offsetX
+            sprite.texture = clamped > 0.5 ? healthyTexture : (clamped > 0.2 ? mediumTexture : criticalTexture)
+        } else if let shape {
+            shape.xScale = clamped
+            shape.position.x = offsetX
+            shape.fillColor = clamped > 0.5 ? .systemGreen : (clamped > 0.2 ? .systemYellow : .systemRed)
+        }
+    }
+}
+
 /// All HUD overlay elements: health bar, round counter, ammo counter, coin
 /// counter, active weapon name, weapon-swap button, owned-perk icons,
 /// "Next Round"/"Shop" buttons, and the game-over overlay. Positioned
@@ -22,8 +82,8 @@ struct HUDDisplayState {
 final class HUD: SKNode {
     private let sceneSize: CGSize
 
-    private let healthBarBackground: SKShapeNode
-    private let healthBarFill: SKShapeNode
+    private let healthBarBackground: SKNode
+    private let healthBarFill: HealthFillNode
     private let healthBarFillWidth: CGFloat
     private let roundLabel: SKLabelNode
     private let coinsLabel: SKLabelNode
@@ -52,15 +112,19 @@ final class HUD: SKNode {
     init(sceneSize: CGSize) {
         self.sceneSize = sceneSize
 
-        healthBarBackground = SKShapeNode(rectOf: CGSize(width: Self.healthBarWidth, height: Self.healthBarHeight), cornerRadius: 4)
-        healthBarBackground.fillColor = SKColor.black.withAlphaComponent(0.5)
-        healthBarBackground.strokeColor = .white
-        healthBarBackground.lineWidth = 1.5
+        let backgroundSize = CGSize(width: Self.healthBarWidth, height: Self.healthBarHeight)
+        if let panel = AssetProvider.makeResizablePanel(sheetName: "panel1", subdirectory: "Assets/UI", size: backgroundSize) {
+            healthBarBackground = panel
+        } else {
+            let shape = SKShapeNode(rectOf: backgroundSize, cornerRadius: 4)
+            shape.fillColor = SKColor.black.withAlphaComponent(0.5)
+            shape.strokeColor = .white
+            shape.lineWidth = 1.5
+            healthBarBackground = shape
+        }
 
         healthBarFillWidth = Self.healthBarWidth - 4
-        healthBarFill = SKShapeNode(rectOf: CGSize(width: healthBarFillWidth, height: Self.healthBarHeight - 4), cornerRadius: 3)
-        healthBarFill.fillColor = .systemGreen
-        healthBarFill.strokeColor = .clear
+        healthBarFill = HealthFillNode(width: healthBarFillWidth, height: Self.healthBarHeight - 4)
 
         roundLabel = SKLabelNode(fontNamed: "Menlo-Bold")
         roundLabel.fontSize = 20
@@ -128,10 +192,7 @@ final class HUD: SKNode {
 
     func update(with state: HUDDisplayState) {
         let pct = max(0, min(1, state.maxHealth > 0 ? state.health / state.maxHealth : 0))
-        healthBarFill.xScale = pct
-        // Re-anchor the fill so it shrinks from the right, keeping the left edge fixed.
-        healthBarFill.position.x = -(healthBarFillWidth / 2) * (1 - pct)
-        healthBarFill.fillColor = pct > 0.5 ? .systemGreen : (pct > 0.2 ? .systemYellow : .systemRed)
+        healthBarFill.update(percent: pct)
 
         roundLabel.text = state.round > 0 ? "ROUND \(state.round)" : "GET READY"
         coinsLabel.text = "COINS: \(state.coins)"

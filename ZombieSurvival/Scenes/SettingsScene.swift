@@ -40,8 +40,22 @@ final class SettingsScene: SKScene {
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
         scaleMode = .resizeFill
         backgroundColor = SKColor(red: 0.06, green: 0.06, blue: 0.09, alpha: 1.0)
+        addPanelBackground()
         addChild(contentLayer)
         rebuild()
+    }
+
+    /// A 9-sliced panel2 background inset from the scene edges (panel2's
+    /// ornate orange-riveted border, distinguishing Settings from the
+    /// plainer panel1 used by Shop/HUD). Skipped, leaving the flat
+    /// backgroundColor, if panel2 fails to load.
+    private func addPanelBackground() {
+        guard let panel = AssetProvider.makeResizablePanel(
+            sheetName: "panel2", subdirectory: "Assets/UI",
+            size: CGSize(width: size.width - 32, height: size.height - 32)
+        ) else { return }
+        panel.zPosition = -1
+        addChild(panel)
     }
 
     // MARK: - Layout
