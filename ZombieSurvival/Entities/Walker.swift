@@ -33,9 +33,10 @@ final class Walker: SKNode, Enemy {
         self.health = health
         self.maxHealth = health
 
-        idleTextures = AssetProvider.loadTextures(AnimationFrameSequence(baseName: "skeleton-idle", count: 17, timePerFrame: Balance.zombieIdleFrameTime)) ?? []
-        moveTextures = AssetProvider.loadTextures(AnimationFrameSequence(baseName: "skeleton-move", count: 17, timePerFrame: Balance.zombieMoveFrameTime)) ?? []
-        attackTextures = AssetProvider.loadTextures(AnimationFrameSequence(baseName: "skeleton-attack", count: 9, timePerFrame: Balance.zombieAttackFrameTime)) ?? []
+        let zombieAssetPath = "Assets/Enemies/Zombie"
+        idleTextures = AssetProvider.loadTextures(AnimationFrameSequence(baseName: "skeleton-idle", count: 17, timePerFrame: Balance.zombieIdleFrameTime, subdirectory: zombieAssetPath)) ?? []
+        moveTextures = AssetProvider.loadTextures(AnimationFrameSequence(baseName: "skeleton-move", count: 17, timePerFrame: Balance.zombieMoveFrameTime, subdirectory: zombieAssetPath)) ?? []
+        attackTextures = AssetProvider.loadTextures(AnimationFrameSequence(baseName: "skeleton-attack", count: 9, timePerFrame: Balance.zombieAttackFrameTime, subdirectory: zombieAssetPath)) ?? []
 
         if let firstIdleFrame = idleTextures.first {
             let sprite = SKSpriteNode(texture: firstIdleFrame)

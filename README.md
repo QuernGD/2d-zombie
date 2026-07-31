@@ -6,15 +6,13 @@ Phase 2 (this pass) adds the economy: coins, a round-end shop, 8 weapons,
 overclocking, perks, and animated zombie sprites — wired to auto-activate
 once real art is dropped in.
 
-## ⚠️ Zombie sprite assets were not received
+## Zombie sprites are live
 
-Phase 2 was asked for using zombie animation frames from a zip file, but no
-zip ever reached this environment — there's no file-upload channel into
-this sandbox, and a filesystem search turned up nothing. Everything that
-depends on those frames is built and wired to work automatically the
-moment they exist; until then, `Walker` renders as the Phase 1 placeholder
-circle with no animation (this is graceful, not broken — see
-`Assets/Enemies/Zombie/README.md` for the exact filenames expected).
+The `skeleton-idle`/`skeleton-move`/`skeleton-attack` frames arrived and
+are checked into `ZombieSurvival/Assets/Enemies/Zombie/`. Getting them to
+actually resolve at runtime surfaced a real bug (see "Bundle path bug"
+below) — it's fixed, and `Walker` now animates idle/move/attack from real
+art instead of the placeholder circle.
 
 ## Running it
 
@@ -135,14 +133,38 @@ leaving the shop.
 
 ### Zombie animation
 
-`Walker` looks for `skeleton-idle_0...16`, `skeleton-move_0...16`,
-`skeleton-attack_0...8` (see `Assets/Enemies/Zombie/README.md`) and drives
-idle/move/attack off of them. No death animation exists in the spec — on
-death, `Walker` plays a code-driven 0.25s scale-down + fade-out and
-removes itself, exactly as asked. All three animation sequences load
-up-front per-instance and gracefully no-op back to the Phase 1 placeholder
-if any frame in a sequence is missing, so a partial art drop never
-animates through blank frames or gets a zombie stuck mid-animation.
+`Walker` loads `skeleton-idle_0...16`, `skeleton-move_0...16`,
+`skeleton-attack_0...8` from `Assets/Enemies/Zombie/` and drives
+idle/move/attack off of them. No death animation was supplied — on death,
+`Walker` plays a code-driven 0.25s scale-down + fade-out and removes
+itself, exactly as asked. All three animation sequences load up-front
+per-instance and gracefully no-op back to the placeholder circle if any
+frame in a sequence is missing, so a partial art drop never animates
+through blank frames or gets a zombie stuck mid-animation.
+
+#### Bundle path bug (found and fixed while wiring the real art in)
+
+`ZombieSurvival/Assets/` is an Xcode **folder reference** (blue folder),
+which — unlike a group — preserves its on-disk directory structure inside
+the built app bundle instead of flattening it. That means
+`Assets/Enemies/Zombie/skeleton-idle_0.png` lands at that same nested path
+inside the bundle, not at the bundle root. `UIImage(named:)` with a bare
+filename only searches the bundle root and compiled asset catalogs
+(`Assets.xcassets`) — it does **not** recursively search subdirectories,
+so the original `UIImage(named: "skeleton-idle_0")` lookup would have
+silently failed once real frames existed, even though everything looked
+correctly wired.
+
+Fixed in `AssetProvider.resolveImage`: it now tries
+`Bundle.main.url(forResource:withExtension:subdirectory:)` with the
+frame's actual bundle-relative folder first (`Assets/Enemies/Zombie` for
+the zombie, `Assets` for anything dropped loose at the top level), and
+only falls back to the bare `UIImage(named:)` lookup, which is what
+actually resolves `Assets.xcassets` entries. `AnimationFrameSequence` grew
+an optional `subdirectory` field to carry this. This also retroactively
+fixes the same latent bug for `player`/`walker`/`bullet`/`coin` if anyone
+drops a loose image straight into `Assets/` rather than into
+`Assets.xcassets`.
 
 ## Balance as implemented (Phase 1, unchanged)
 
@@ -157,7 +179,6 @@ All Phase 2 weapon/coin/overclock/perk numbers are placeholders in
 
 ## What's stubbed / simplified
 
-- **Zombie sprites**: see the warning at the top — frames never arrived.
 - **Save/load**: still Phase 3. `GameState` now also carries coins, owned
   weapons, overclock tiers, active slot, and owned perks, and stays
   `Codable`/SpriteKit-free, but nothing reads or writes it to disk yet.
