@@ -1,22 +1,34 @@
 import SpriteKit
 
 final class Player: SKNode {
-    let maxHealth: CGFloat
-    let moveSpeed: CGFloat
+    let baseMaxHealth: CGFloat
+    let baseMoveSpeed: CGFloat
     private(set) var health: CGFloat
     private(set) var facingAngle: CGFloat = 0
-    let pistol: Pistol
+    let inventory: WeaponInventory
+    private(set) var perks: Set<Perk> = []
 
     private let visualNode: SKNode
     private let facingIndicator: SKShapeNode
 
     var isAlive: Bool { health > 0 }
+    var activeWeapon: Weapon? { inventory.activeWeapon }
+
+    /// Base value doubled by the Vitality perk.
+    var maxHealth: CGFloat {
+        baseMaxHealth * (perks.contains(.vitality) ? Balance.vitalityMaxHealthMultiplier : 1)
+    }
+
+    /// Base value boosted by the Sprinter perk.
+    var moveSpeed: CGFloat {
+        baseMoveSpeed * (perks.contains(.sprinter) ? Balance.sprinterMoveSpeedMultiplier : 1)
+    }
 
     init(maxHealth: CGFloat = Balance.playerMaxHealth, moveSpeed: CGFloat = Balance.playerMoveSpeed) {
-        self.maxHealth = maxHealth
+        self.baseMaxHealth = maxHealth
         self.health = maxHealth
-        self.moveSpeed = moveSpeed
-        self.pistol = Pistol()
+        self.baseMoveSpeed = moveSpeed
+        self.inventory = WeaponInventory()
 
         visualNode = AssetProvider.makeNode(for: .player, radius: Balance.playerRadius, fillColor: .systemGreen)
 
@@ -38,6 +50,19 @@ final class Player: SKNode {
 
     func takeDamage(_ amount: CGFloat) {
         health = max(0, health - amount)
+    }
+
+    /// One-time purchase effect. Vitality tops up current health by the
+    /// exact amount max health just increased, so buying it never makes an
+    /// already-hurt player's health bar look worse.
+    func applyPerk(_ perk: Perk) {
+        guard !perks.contains(perk) else { return }
+        let previousMaxHealth = maxHealth
+        perks.insert(perk)
+        if perk == .vitality {
+            health += (maxHealth - previousMaxHealth)
+        }
+        inventory.refreshModifiers(perks: perks)
     }
 
     func move(by vector: CGVector, deltaTime: TimeInterval, bounds: CGRect) {

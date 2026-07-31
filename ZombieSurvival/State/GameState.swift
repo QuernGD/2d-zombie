@@ -5,7 +5,7 @@ import CoreGraphics
 /// free of SpriteKit types from day one means a future save system only
 /// needs to read/write this struct.
 struct GameState: Codable, Equatable {
-    var schemaVersion: Int = 1
+    var schemaVersion: Int = 2
 
     var round: Int = 0
     var isRoundActive: Bool = false
@@ -19,4 +19,12 @@ struct GameState: Codable, Equatable {
     var isReloading: Bool = false
 
     var controlSchemeType: ControlSchemeType = .dualStick
+
+    // MARK: - Economy / inventory (Phase 2)
+
+    var coins: Int = 0
+    var ownedWeapons: [WeaponType] = [.pistol]
+    var overclockTiers: [WeaponType: Int] = [:]
+    var activeSlot: Int = 0
+    var ownedPerks: Set<Perk> = []
 }
