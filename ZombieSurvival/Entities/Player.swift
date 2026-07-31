@@ -127,17 +127,17 @@ final class Player: SKNode {
         inventory.refreshModifiers(perks: perks)
     }
 
-    func move(by vector: CGVector, deltaTime: TimeInterval, bounds: CGRect) {
+    func move(by vector: CGVector, deltaTime: TimeInterval, bounds: CGRect, solidRects: [CGRect]) {
         guard !vector.isZero else {
             playAnimation(.idle)
             return
         }
         let dx = vector.dx * moveSpeed * CGFloat(deltaTime)
         let dy = vector.dy * moveSpeed * CGFloat(deltaTime)
-        var newPosition = CGPoint(x: position.x + dx, y: position.y + dy)
-        newPosition.x = min(max(newPosition.x, bounds.minX + Balance.playerRadius), bounds.maxX - Balance.playerRadius)
-        newPosition.y = min(max(newPosition.y, bounds.minY + Balance.playerRadius), bounds.maxY - Balance.playerRadius)
-        position = newPosition
+        var attempted = CGPoint(x: position.x + dx, y: position.y + dy)
+        attempted.x = min(max(attempted.x, bounds.minX + Balance.playerRadius), bounds.maxX - Balance.playerRadius)
+        attempted.y = min(max(attempted.y, bounds.minY + Balance.playerRadius), bounds.maxY - Balance.playerRadius)
+        position = resolveCollision(from: position, to: attempted, radius: Balance.playerRadius, solidRects: solidRects)
         playAnimation(.run)
     }
 
