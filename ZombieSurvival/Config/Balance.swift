@@ -195,4 +195,105 @@ enum Balance {
     /// drag slider — SpriteKit has no built-in slider widget and a real
     /// drag-tracked one was more UI than this pass justified.
     static let volumeSliderSteps = 5
+
+    // MARK: - Phase 4: Character spritesheets (Zombie1-4 + Player)
+    // All measured directly from the delivered art (192x32/256x32/96x32/
+    // 192x32/256x32 strips of 32x32 frames) — these exactly match the frame
+    // counts stated in the brief, unlike several sheets below.
+
+    static let characterFrameSize: CGFloat = 32
+    static let characterIdleFrameCount = 6
+    static let characterRunFrameCount = 8
+    static let characterHitFrameCount = 3
+    static let characterKnockedFrameCount = 6
+    static let characterDeathFrameCount = 8
+
+    static let characterIdleFrameTime: TimeInterval = 0.12
+    static let characterRunFrameTime: TimeInterval = 0.08
+    static let characterHitFrameTime: TimeInterval = 0.07
+    static let characterKnockedFrameTime: TimeInterval = 0.09
+    static let characterDeathFrameTime: TimeInterval = 0.08
+
+    /// No zombie "attack" sheet exists in this art pack, so Hit/Knocked are
+    /// repurposed as light/heavy damage-*reaction* flinches instead: a
+    /// single hit dealing at least this much damage plays Knocked, anything
+    /// under it plays Hit.
+    static let zombieKnockedDamageThreshold: CGFloat = 50
+
+    // MARK: - Phase 4: Weapon shoot spritesheets
+    // 8 WeaponTypes share 6 unique sheets (no dedicated SMG or Arc Cannon
+    // art) — see WeaponType.shootSheet in WeaponInventory.swift for the
+    // mapping. Frame counts are measured (vary 4-13, matching the brief's
+    // "varies 4-13" claim).
+
+    static let weaponFrameSize: CGFloat = 32
+    static let weaponShootFrameTime: TimeInterval = 0.045
+    static let pistolShootFrameCount = 5
+    static let smgShootFrameCount = 9          // reuses Revlover_Shoot.png (no dedicated SMG sheet)
+    static let shotgunShootFrameCount = 10     // Pump_Shoot.png
+    static let assaultRifleShootFrameCount = 4 // Rifle_Shoot.png
+    static let lmgShootFrameCount = 4          // reuses Rifle_Shoot.png (long-gun family)
+    static let sniperShootFrameCount = 13
+    static let arcCannonShootFrameCount = 13   // reuses Sniper_Shoot.png (precision/beam motif)
+    static let grenadeLauncherShootFrameCount = 12 // RocketLauncher_Shoot.png
+
+    // MARK: - Phase 4: Effects spritesheets
+    // The brief states bullet impact=3f, explosion=10f, pop-ups=3f each, but
+    // the delivered files measure 100x20 (bullet impact/pop-ups, 20x20
+    // frames) and 336x48 (explosion, 48x48 frames) — 5 and 7 frames
+    // respectively. Using the measured values.
+
+    static let bulletImpactFrameSize: CGFloat = 20
+    static let bulletImpactFrameCount = 5
+    static let explosionFrameSize: CGFloat = 48
+    static let explosionFrameCount = 7
+    static let popupFrameSize: CGFloat = 20
+    static let popupFrameCount = 5
+    static let effectFrameTime: TimeInterval = 0.05
+
+    // MARK: - Phase 4: Item spritesheets (16x16)
+    // The brief states 3 frames each; the delivered sheets measure 112x16 at
+    // 16x16 frames — 7 frames. Using the measured value.
+
+    static let itemFrameSize: CGFloat = 16
+    static let itemFrameCount = 7
+    static let itemFrameTime: TimeInterval = 0.15
+
+    // MARK: - Phase 4: Tile-based arenas
+    // Neither tileset ships with a documented tile-index legend, so these
+    // column/row picks are a best-effort visual guess made by eyeballing the
+    // sheets — flag for manual verification/adjustment in Xcode, not exact.
+
+    static let tileSize: Int = 32
+
+    static let wastelandFloorTile = TileCoord(column: 0, row: 1)
+    static let wastelandWallTile = TileCoord(column: 6, row: 14)
+    static let wastelandObstacleTiles: [TileCoord] = [
+        TileCoord(column: 4, row: 5), TileCoord(column: 5, row: 4), TileCoord(column: 5, row: 6)
+    ]
+
+    static let interiorFloorTile = TileCoord(column: 0, row: 1)
+    static let interiorWallTile = TileCoord(column: 0, row: 5) // no distinct brick tile in this sheet; a locker/cabinet tile stands in as a wall
+    static let interiorObstacleTiles: [TileCoord] = [
+        TileCoord(column: 6, row: 8), TileCoord(column: 6, row: 5), TileCoord(column: 2, row: 9)
+    ]
+
+    // MARK: - Phase 4: UI panels & health bar art
+
+    /// panel1/panel2.png are 96x96, a clean 3x3 grid of 32px cells — see
+    /// AssetProvider.makeResizablePanel's default centerRect (1/3,1/3,1/3,1/3).
+    static let uiPanelSheetSize: CGFloat = 96
+    /// health_bar_fillers.png is 4 solid 64x64 color swatches in a row,
+    /// left to right: red/maroon, blue, orange/brown, green.
+    static let healthBarFillerSwatchSize: CGFloat = 64
+    static let healthBarFillerSwatchCount = 4
+}
+
+/// A single cell address (column, row) into a grid-based tilesheet. Plain
+/// (Int, Int) tuples work but their labels don't survive assignment through
+/// differently-typed call sites cleanly, so this is used everywhere a tile
+/// coordinate is passed around instead.
+struct TileCoord {
+    let column: Int
+    let row: Int
 }

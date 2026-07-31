@@ -67,7 +67,7 @@ final class WaveManager {
     private func spawnOne(currentTime: TimeInterval) {
         let health = Balance.zombieHealth(forRound: currentRound) * difficulty.multiplier
         let contactDamage = Balance.zombieContactDamage * difficulty.multiplier
-        let walker = Walker(health: health, contactDamage: contactDamage)
+        let walker = Walker(health: health, contactDamage: contactDamage, zombieVariant: Int.random(in: 1...4))
         walker.position = spawnPoints.randomElement() ?? .zero
 
         aliveEnemies.insert(ObjectIdentifier(walker.node))

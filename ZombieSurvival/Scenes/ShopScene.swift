@@ -30,8 +30,22 @@ final class ShopScene: SKScene {
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
         scaleMode = .resizeFill
         backgroundColor = SKColor(red: 0.05, green: 0.05, blue: 0.09, alpha: 1.0)
+        addPanelBackground()
         addChild(contentLayer)
         rebuild()
+    }
+
+    /// A 9-sliced panel1 background inset from the scene edges, giving the
+    /// shop dialog a framed look instead of a flat scene color. Silently
+    /// skipped (leaving the flat backgroundColor as-is) if panel1 fails to
+    /// load.
+    private func addPanelBackground() {
+        guard let panel = AssetProvider.makeResizablePanel(
+            sheetName: "panel1", subdirectory: "Assets/UI",
+            size: CGSize(width: size.width - 32, height: size.height - 32)
+        ) else { return }
+        panel.zPosition = -1
+        addChild(panel)
     }
 
     // MARK: - Layout
