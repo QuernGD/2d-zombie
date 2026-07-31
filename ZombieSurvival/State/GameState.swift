@@ -21,7 +21,7 @@ struct GameState: Codable, Equatable {
 
     // MARK: - Economy / inventory (Phase 2)
 
-    var coins: Int = 20000000
+    var coins: Int = 0
     /// Exactly WeaponInventory.slotCount elements, index-aligned with
     /// WeaponInventory.slots (nil = empty slot). Needs to preserve slot
     /// order/identity (not just "which types are owned") so loading a save
