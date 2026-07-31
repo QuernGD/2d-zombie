@@ -8,3 +8,8 @@ xcuserdata/
 .swiftpm/
 *.xccheckout
 *.xcscmblueprint
+
+## CI build output (build-ipa.yml archives/packages locally into the repo root)
+*.xcarchive/
+*.ipa
+Payload/
