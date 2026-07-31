@@ -1,0 +1,66 @@
+name: Build ZombieSurvival IPA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      # This project has no Swift Package dependencies (no Package.swift /
+      # Package.resolved, no XCRemoteSwiftPackageReference in project.pbxproj),
+      # so there is nothing to resolve here. If a future phase adds an SPM
+      # dependency, add this step back in before the archive step:
+      #
+      #   - name: Resolve Swift Package dependencies
+      #     run: |
+      #       xcodebuild -resolvePackageDependencies \
+      #         -project ZombieSurvival.xcodeproj \
+      #         -scheme ZombieSurvival
+
+      - name: Build Unsigned Archive
+        run: |
+          xcodebuild archive \
+            -project ZombieSurvival.xcodeproj \
+            -scheme ZombieSurvival \
+            -archivePath ZombieSurvival.xcarchive \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM=""
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -r ZombieSurvival.xcarchive/Products/Applications/ZombieSurvival.app Payload/
+          zip -qr ZombieSurvival.ipa Payload
+          rm -rf Payload
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZombieSurvival-IPA
+          path: ZombieSurvival.ipa
+          retention-days: 14
+
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: ZombieSurvival Build ${{ github.run_number }}
+          files: ZombieSurvival.ipa
+          draft: true
