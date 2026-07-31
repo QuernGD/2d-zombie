@@ -90,6 +90,14 @@ final class WeaponInventory {
         slots[slot] = weapon
     }
 
+    /// Load-time restoration only — sets the active slot directly, bypassing
+    /// swapActive's "must already hold a weapon" guard (the caller is
+    /// expected to have equipped every slot first).
+    func setActiveIndex(_ index: Int) {
+        guard slots.indices.contains(index), slots[index] != nil else { return }
+        activeIndex = index
+    }
+
     /// Re-applies perk-derived multipliers (Overdrive, Rapid Hands) to every
     /// owned weapon. Overclock's own tier bonus lives on the weapon itself
     /// and is never touched here, so calling this repeatedly is always safe.

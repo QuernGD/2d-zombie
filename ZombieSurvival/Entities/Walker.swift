@@ -14,7 +14,9 @@ final class Walker: SKNode, Enemy {
     private(set) var health: CGFloat
     let maxHealth: CGFloat
     let moveSpeed: CGFloat = Balance.zombieMoveSpeed
-    let contactDamage: CGFloat = Balance.zombieContactDamage
+    /// Per-instance rather than a fixed constant so WaveManager can scale it
+    /// by the run's difficulty multiplier.
+    let contactDamage: CGFloat
     let attackCooldown: TimeInterval = Balance.zombieAttackCooldown
 
     private var lastAttackTime: TimeInterval = -.infinity
@@ -29,9 +31,10 @@ final class Walker: SKNode, Enemy {
 
     var isAlive: Bool { health > 0 }
 
-    init(health: CGFloat) {
+    init(health: CGFloat, contactDamage: CGFloat = Balance.zombieContactDamage) {
         self.health = health
         self.maxHealth = health
+        self.contactDamage = contactDamage
 
         let zombieAssetPath = "Assets/Enemies/Zombie"
         idleTextures = AssetProvider.loadTextures(AnimationFrameSequence(baseName: "skeleton-idle", count: 17, timePerFrame: Balance.zombieIdleFrameTime, subdirectory: zombieAssetPath)) ?? []
