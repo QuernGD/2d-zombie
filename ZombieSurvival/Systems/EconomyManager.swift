@@ -11,6 +11,12 @@ final class EconomyManager {
         coins += max(0, amount)
     }
 
+    /// Load-time restoration only — sets the balance directly rather than
+    /// adding to whatever a fresh EconomyManager already has (0).
+    func setCoins(_ amount: Int) {
+        coins = max(0, amount)
+    }
+
     func canAfford(_ cost: Int) -> Bool {
         coins >= cost
     }

@@ -34,6 +34,7 @@ final class HUD: SKNode {
 
     private var nextRoundButton: SKShapeNode?
     private var shopButton: SKShapeNode?
+    private var pauseButton: SKShapeNode?
     private var swapWeaponButton: SKShapeNode?
     private var gameOverOverlay: SKNode?
     private var lastDisplayedPerks: Set<Perk> = []
@@ -42,9 +43,11 @@ final class HUD: SKNode {
     private static let healthBarHeight: CGFloat = 22
     static let nextRoundButtonName = "nextRoundButton"
     static let shopButtonName = "shopButton"
+    static let pauseButtonName = "pauseButton"
     static let swapWeaponButtonName = "swapWeaponButton"
     static let restartButtonName = "restartButton"
-    static let mainMenuButtonName = "mainMenuButton"
+    static let restartFromSaveButtonName = "restartFromSaveButton"
+    static let quitButtonName = "quitButton"
 
     init(sceneSize: CGSize) {
         self.sceneSize = sceneSize
@@ -209,7 +212,17 @@ final class HUD: SKNode {
         shopButton = nil
     }
 
-    func showGameOver(round: Int) {
+    /// Always visible during a round (not just between rounds), unlike
+    /// Next Round/Shop.
+    func showPauseButton() {
+        guard pauseButton == nil else { return }
+        let button = makeButton(text: "PAUSE", name: Self.pauseButtonName, size: CGSize(width: 90, height: 40), fontSize: 14)
+        button.position = CGPoint(x: 0, y: sceneSize.height / 2 - 100)
+        addChild(button)
+        pauseButton = button
+    }
+
+    func showGameOver(round: Int, hasAnySave: Bool) {
         guard gameOverOverlay == nil else { return }
         let overlay = SKNode()
         overlay.zPosition = 3000
@@ -223,24 +236,33 @@ final class HUD: SKNode {
         title.text = "GAME OVER"
         title.fontSize = 40
         title.fontColor = .white
-        title.position = CGPoint(x: 0, y: 70)
+        title.position = CGPoint(x: 0, y: 100)
         overlay.addChild(title)
 
         let roundReached = SKLabelNode(fontNamed: "Menlo-Bold")
         roundReached.text = "Round Reached: \(round)"
         roundReached.fontSize = 22
         roundReached.fontColor = .white
-        roundReached.position = CGPoint(x: 0, y: 20)
+        roundReached.position = CGPoint(x: 0, y: 50)
         overlay.addChild(roundReached)
 
-        let restartButton = makeButton(text: "RESTART", name: Self.restartButtonName, size: CGSize(width: 200, height: 50))
-        restartButton.position = CGPoint(x: 0, y: -50)
+        let restartButton = makeButton(text: "RESTART", name: Self.restartButtonName, size: CGSize(width: 220, height: 50))
+        restartButton.position = CGPoint(x: 0, y: -20)
         overlay.addChild(restartButton)
 
-        // Stubbed: no main menu exists yet in this phase.
-        let menuButton = makeButton(text: "MAIN MENU", name: Self.mainMenuButtonName, size: CGSize(width: 200, height: 50))
-        menuButton.position = CGPoint(x: 0, y: -120)
-        overlay.addChild(menuButton)
+        let restartFromSaveButton = makeButton(
+            text: "RESTART FROM LAST SAVE",
+            name: Self.restartFromSaveButtonName,
+            size: CGSize(width: 220, height: 50),
+            fontSize: 14,
+            enabled: hasAnySave
+        )
+        restartFromSaveButton.position = CGPoint(x: 0, y: -80)
+        overlay.addChild(restartFromSaveButton)
+
+        let quitButton = makeButton(text: "QUIT", name: Self.quitButtonName, size: CGSize(width: 220, height: 50))
+        quitButton.position = CGPoint(x: 0, y: -140)
+        overlay.addChild(quitButton)
 
         addChild(overlay)
         gameOverOverlay = overlay
@@ -251,20 +273,20 @@ final class HUD: SKNode {
         gameOverOverlay = nil
     }
 
-    private func makeButton(text: String, name: String, size: CGSize, fontSize: CGFloat = 18) -> SKShapeNode {
+    private func makeButton(text: String, name: String, size: CGSize, fontSize: CGFloat = 18, enabled: Bool = true) -> SKShapeNode {
         let button = SKShapeNode(rectOf: size, cornerRadius: 10)
-        button.fillColor = SKColor.darkGray.withAlphaComponent(0.9)
+        button.fillColor = enabled ? SKColor.darkGray.withAlphaComponent(0.9) : SKColor.darkGray.withAlphaComponent(0.35)
         button.strokeColor = .white
         button.lineWidth = 2
-        button.name = name
+        button.name = enabled ? name : nil
 
         let label = SKLabelNode(fontNamed: "Menlo-Bold")
         label.text = text
         label.fontSize = fontSize
-        label.fontColor = .white
+        label.fontColor = enabled ? .white : .gray
         label.verticalAlignmentMode = .center
         label.horizontalAlignmentMode = .center
-        label.name = name
+        label.name = button.name
         button.addChild(label)
 
         return button

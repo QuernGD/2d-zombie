@@ -182,4 +182,17 @@ enum Balance {
     static let zombieMoveFrameTime: TimeInterval = 0.07
     static let zombieAttackFrameTime: TimeInterval = 0.06
     static let zombieDeathEffectDuration: TimeInterval = 0.25
+
+    // MARK: - Difficulty (global multiplier on zombie health + contact damage)
+
+    static let difficultyEasyMultiplier: CGFloat = 0.75
+    static let difficultyMediumMultiplier: CGFloat = 1.0
+    static let difficultyHardMultiplier: CGFloat = 1.35
+
+    // MARK: - Settings UI
+
+    /// Volume controls are stepped (0/20/40/60/80/100%), not a continuous
+    /// drag slider — SpriteKit has no built-in slider widget and a real
+    /// drag-tracked one was more UI than this pass justified.
+    static let volumeSliderSteps = 5
 }

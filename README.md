@@ -2,9 +2,10 @@
 
 A top-down, twin-stick zombie survival shooter built with SpriteKit for
 iOS 17+. Phase 1 was the core loop (move/aim/shoot/survive rounds/die).
-Phase 2 (this pass) adds the economy: coins, a round-end shop, 8 weapons,
-overclocking, perks, and animated zombie sprites — wired to auto-activate
-once real art is dropped in.
+Phase 2 added the economy: coins, a round-end shop, 8 weapons, overclocking,
+perks, and animated zombie sprites. Phase 3 (this pass) adds a save system
+(3 manual-save slots), a real main menu, map/difficulty select, a full
+settings screen, and an in-run pause menu.
 
 ## Zombie sprites are live
 
@@ -22,23 +23,32 @@ art instead of the placeholder circle.
    process flags before your first run).
 2. Pick the `ZombieSurvival` scheme and any iOS 17+ simulator (iPhone or
    iPad), or a real device with your team selected under Signing.
-3. Run. The game is landscape-only.
-   - **Left half of the screen**: virtual joystick, moves the player.
+3. Run. The app opens on the **Main Menu**: Play (→ map/difficulty select →
+   new run), Load Game (3 slots), Settings.
+4. In a run, the game is landscape-only.
+   - **Left half of the screen**: virtual joystick, moves the player (or,
+     with Single Stick + Auto-Aim selected in Settings, just movement —
+     aim/fire is automatic).
    - **Right half of the screen**: virtual joystick, aims and fires the
-     active weapon continuously while held.
-4. Tap **Next Round** to start (every round, including the first — no
-   auto-advance). **Shop** appears alongside it at every round break.
-5. In the shop: buy weapons, a Mystery Crate, an ammo refill, an Overclock
-   upgrade for your equipped weapon, or a perk. **Close** returns to the
-   game exactly as you left it — same position, health, ammo, round state.
+     active weapon continuously while held (dual-stick mode only).
+5. Tap **Next Round** to start (every round, including the first — no
+   auto-advance). **Shop** and **Pause** are both available alongside it —
+   Shop only at round breaks, Pause any time during a round.
+6. In the shop: buy weapons, a Mystery Crate, an ammo refill, an Overclock
+   upgrade for your equipped weapon, a perk, or open Settings. **Close**
+   returns to the game exactly as you left it.
+7. In the pause menu: Resume, Settings, **Save Game** (pick one of 3
+   slots), or Quit to Menu.
+8. On death: **Restart** (fresh run, same map/difficulty), **Restart from
+   Last Save** (greyed out if you've never saved), or **Quit**.
 
 ## Architecture — Phase 1 (unchanged)
 
 | File | Responsibility |
 |---|---|
 | `Config/Balance.swift` | Every tuning number. Rebalance the whole game from this one file. |
-| `State/GameState.swift` | Serializable (`Codable`) snapshot of a run, SpriteKit-free — ready for a future save system. |
-| `Controls/*.swift` | `ControlScheme` abstraction (dual-stick active, single-stick+auto-aim built but not exposed via any settings UI yet). |
+| `State/GameState.swift` | Serializable (`Codable`) snapshot of a run, SpriteKit-free — read/written directly by `SaveManager` as of Phase 3. |
+| `Controls/*.swift` | `ControlScheme` abstraction (dual-stick or single-stick+auto-aim, switchable live from Settings as of Phase 3). |
 | `Entities/Enemy.swift` | `Enemy` protocol — new enemy types are new files. |
 | `Entities/Walker.swift` | The one enemy type: pursues the player, contact damage on a cooldown. Now also animated (see below). |
 | `Systems/WaveManager.swift` | Round progression and the spawn queue (25 concurrent cap, refills as enemies die). |
@@ -166,6 +176,120 @@ fixes the same latent bug for `player`/`walker`/`bullet`/`coin` if anyone
 drops a loose image straight into `Assets/` rather than into
 `Assets.xcassets`.
 
+## Architecture — Phase 3 (new/changed this pass)
+
+| File | Responsibility |
+|---|---|
+| `Systems/SaveSlot.swift` | Lightweight `Codable` summary (round, coins, timestamp) — the thing LoadGameScene actually reads to list slots cheaply. |
+| `Systems/SaveManager.swift` | FileManager-backed persistence in the Documents directory: one state JSON + one summary JSON per slot, `mostRecentSlot()`, `hasAnySave()`. Manual save only — nothing in this codebase calls `save` except the Pause menu's "Save Game" button. |
+| `Systems/SettingsStore.swift` | Global, cross-run settings in UserDefaults (never GameState/SaveManager). Also hosts `Difficulty` and `ParticleDensity`/`FrameCap` — small enough not to need their own files. |
+| `Systems/AudioManager.swift` | `AudioManager` protocol + `StubAudioManager` (no-op) + swappable `AudioManagerProvider.shared`. |
+| `Scenes/MainMenuScene.swift` | App entry point. Play / Load Game / Settings. |
+| `Scenes/MapSelectScene.swift` | Map + difficulty picker shown before a new run starts. Also hosts `MapID`. |
+| `Scenes/LoadGameScene.swift` | Lists the 3 save slots via `SaveSlot` summaries; loads a slot into a fresh `GameScene`. |
+| `Scenes/SettingsScene.swift` | Audio/Graphics/Controls/Difficulty, reachable from the main menu, the shop, and the pause menu. |
+| `Scenes/PauseMenuScene.swift` | In-run pause: Resume, Settings, Save Game (inline 3-slot picker), Quit to Menu. Same pause mechanism as the shop. |
+
+### Save system
+
+Exactly what was asked: 3 slots, manual save only (the only call to
+`SaveManager.save` in the entire codebase is the Pause menu's "Save Game"
+button — there is no autosave anywhere), one JSON file per slot in the
+Documents directory via `Codable` + `FileManager`, plus a separate
+lightweight `SaveSlot` summary file per slot so `LoadGameScene` never has
+to deserialize a full run just to show a list.
+
+**Timer reset on load, guaranteed by construction, not special-cased.**
+Loading a save always builds a **brand-new** `GameScene` (via
+`configureRestoring(_:)`, called before the scene is first presented) —
+never resurrects timer state onto a live instance. That one design choice
+gets the entire "critical" requirement for free:
+- `gameClock` starts at 0 because it's a fresh instance's stored property.
+- Every weapon is rebuilt via `WeaponType.makeWeapon()` — a fresh object,
+  so `lastFireTime`/`reloadStartTime` start at their defaults. Each
+  restored weapon also gets an explicit `refillMagazine()` call, so it
+  always loads with a full magazine and not-reloading regardless of what
+  was true at save time.
+- `WaveManager` is a fresh instance too, so `lastSpawnTime` and the alive-
+  enemy set start empty. `restoreRound(_:)` sets `currentRound` so the
+  *next* "Next Round" tap lands exactly on the saved round — the round is
+  refought fresh, since no enemies or mid-combat state is ever restored.
+- No enemies exist at load time, full stop — `enemies` is a fresh empty
+  array on a fresh scene.
+
+The other thing this surfaced and fixed: **SpriteKit calls `didMove(to:)`
+every time a scene is presented**, including re-presenting an
+already-set-up instance (this bit Phase 2's shop too — see below). A
+`didSetup` guard makes `GameScene`'s one-time setup actually one-time.
+
+### Main menu, map/difficulty, settings, pause
+
+- **Map select** offers both maps, unlocked, no cost — see the map-parity
+  callout below.
+- **Difficulty** (Easy 0.75× / Medium 1.0× / Hard 1.35×) is a single
+  multiplier applied to both zombie health and contact damage
+  (`WaveManager.difficulty`, read once at scene setup). It's chosen at
+  Map Select (which just edits the same `SettingsStore.difficulty`
+  preference Settings shows) and baked into that run's `GameState` —
+  SettingsScene shows it read-only, labeled "locked for this run," the
+  moment it's opened mid-run.
+- **Controls**: switching Dual Stick ↔ Single Stick + Auto-Aim in
+  Settings takes effect immediately. `GameScene.refreshControlSchemeIfNeeded()`
+  is called every time you return to gameplay from the shop or pause menu,
+  tears down the old joystick nodes, and installs the new scheme's — this
+  is also what finally makes `SingleStickAutoAimControlScheme` (built in
+  Phase 1, never reachable) actually reachable.
+- **Pause** is a new HUD button, visible for the entire run (not just
+  round breaks, unlike Next Round/Shop), using the exact same
+  pause-without-unloading mechanism as the shop.
+- **Game over** now offers three real options instead of one working +
+  one stub: Restart (fresh run, same map/difficulty), Restart from Last
+  Save (greyed out via `SaveManager.hasAnySave()` if you've never saved),
+  Quit (→ Main Menu, replacing the old stubbed "Main Menu" button).
+
+### Judgment calls worth knowing about
+
+- **Map parity.** Both maps are fully selectable and functional, but they
+  currently share identical arena geometry and spawn layout — the only
+  difference is a background tint (`MapID.backgroundColor`). Saying so
+  directly rather than pretending there's more variety than there is.
+- **Difficulty is set in two places, but it's one preference.** Map Select
+  and Settings both read/write the same `SettingsStore.difficulty` — there
+  isn't a separate "run setup" value distinct from the "global default."
+  Only the run's own `GameState.difficulty` snapshot is actually locked.
+- **Volume controls are stepped, not a continuous drag slider** (5
+  discrete levels, tap a segment to set it). SpriteKit has no built-in
+  slider widget; a real drag-tracked one felt like more UI investment than
+  this pass justified. `Balance.volumeSliderSteps` controls the step count.
+- **No audio playback system exists in this project.** Master/SFX volume
+  and mute are fully wired end-to-end — they persist to `SettingsStore`
+  *and* call through `AudioManagerProvider.shared` (a couple of
+  `playSFX(...)` calls exist in `GameScene`, e.g. on weapon fire and
+  zombie death) — but `StubAudioManager` is a genuine no-op, not a fake
+  player. Swap `AudioManagerProvider.shared` for a real implementation
+  later; no call site changes.
+- **Particle density, blood effects, screen shake, and damage numbers are
+  in the same boat as audio**, one level further: none of those systems
+  exist in the codebase *at all* yet (no particle emitters, no floating
+  damage numbers, no camera shake), so these Settings toggles persist to
+  `SettingsStore` but have nothing to flip yet. Not fabricated, just
+  honestly inert until those systems exist.
+- **Frame cap applies at next launch, not live.** `SpriteView`'s
+  `preferredFramesPerSecond` is a SwiftUI-level parameter read once in
+  `GameContainerView`; there's no observable bridge from a SpriteKit
+  scene's Settings change back up to SwiftUI in this codebase. Changing it
+  persists correctly and takes effect the next time the app launches.
+- **Restarting after death does not carry over difficulty from a loaded
+  save differently than a fresh run** — "Restart" always keeps whatever
+  map/difficulty the just-ended run had, whether that run was fresh or
+  loaded from a save. Coins/weapons/perks never carry over on Restart
+  either way, per spec.
+- **Save Game has no overwrite confirmation** — tapping a slot in the
+  pause menu's save picker overwrites it immediately (with a brief
+  "Saved to Slot N" toast), including a non-empty slot. Kept simple
+  deliberately; a confirm-overwrite step would be the natural next
+  addition.
+
 ## Balance as implemented (Phase 1, unchanged)
 
 - Zombie health: 150 base, +100 per round through round 9 (round 9 = 950),
@@ -179,22 +303,29 @@ All Phase 2 weapon/coin/overclock/perk numbers are placeholders in
 
 ## What's stubbed / simplified
 
-- **Save/load**: still Phase 3. `GameState` now also carries coins, owned
-  weapons, overclock tiers, active slot, and owned perks, and stays
-  `Codable`/SpriteKit-free, but nothing reads or writes it to disk yet.
-  `GameScene.syncGameState()` is the integration point once it exists.
-- **Game over buttons**: "Restart" reloads a fresh `GameScene` (coins,
-  weapons, and perks do **not** carry over into a new run — there's no
-  meta-progression system specified yet). "Main Menu" is still a no-op.
-- **Single-stick + auto-aim control scheme**: still fully functional, still
-  not reachable without a settings screen.
+- **Audio, particle density, blood, screen shake, damage numbers**: settings
+  UI and persistence are real; the underlying systems don't exist yet (see
+  the Phase 3 judgment calls above for specifics on each).
+- **Frame cap**: persists correctly, applies at next app launch rather than
+  live (see above).
+- **Map variety**: both maps are selectable and playable; they currently
+  share identical geometry, differing only in background tint.
+- **Meta-progression**: coins, weapons, and perks never carry over between
+  runs (Restart or a brand new run) — every run starts from Phase 2's
+  baseline aside from map/difficulty. No meta-progression system was
+  specified.
 - **One enemy type**, **straight-line pursuit**, **single-screen arena**,
   **manual circle-vs-circle collision** — all unchanged from Phase 1, see
   prior notes; none of this pass touched them.
 - **Chain (Arc Cannon) and AoE (Grenade Launcher) visuals** are minimal
   placeholder flourishes (a fading ring / a fading line) — functional, not
   polished.
+- **Shop and Settings layouts are fixed, non-scrolling grids** — comfortable
+  on iPad landscape, tight on smaller iPhones. A scrollable list would be
+  the natural follow-up for both; out of scope for this pass.
 - Not compiled with `xcodebuild`/Xcode in this environment (Linux, no
   Apple toolchain) — reviewed carefully by hand (including catching and
-  fixing the `didMove(to:)` re-presentation bug above), but give it a
-  first real build in Xcode before relying on it.
+  fixing two real bugs along the way: the `didMove(to:)` re-presentation
+  issue and a Walker animation state that could get permanently stuck if
+  only some frame sequences were missing), but give it a first real build
+  in Xcode before relying on it.

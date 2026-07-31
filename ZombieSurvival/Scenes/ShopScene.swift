@@ -177,9 +177,13 @@ final class ShopScene: SKScene {
     }
 
     private func drawCloseButton() {
-        let button = makeButton(text: "CLOSE", name: "close", size: CGSize(width: 160, height: 44), fontSize: 16)
-        button.position = CGPoint(x: 0, y: -size.height / 2 + 34)
-        contentLayer.addChild(button)
+        let close = makeButton(text: "CLOSE", name: "close", size: CGSize(width: 160, height: 44), fontSize: 16)
+        close.position = CGPoint(x: 90, y: -size.height / 2 + 34)
+        contentLayer.addChild(close)
+
+        let settings = makeButton(text: "SETTINGS", name: "settings", size: CGSize(width: 160, height: 44), fontSize: 16)
+        settings.position = CGPoint(x: -90, y: -size.height / 2 + 34)
+        contentLayer.addChild(settings)
     }
 
     private func showSlotChoicePrompt(type: WeaponType, cost: Int) {
@@ -249,6 +253,8 @@ final class ShopScene: SKScene {
         switch action {
         case "close":
             closeShop()
+        case "settings":
+            openSettings()
         case "swapActive":
             player.inventory.swapActive()
             rebuild()
@@ -340,6 +346,14 @@ final class ShopScene: SKScene {
 
     private func closeShop() {
         gameScene.isPaused = false
+        gameScene.refreshControlSchemeIfNeeded()
         view?.presentScene(gameScene, transition: .crossFade(withDuration: 0.3))
+    }
+
+    private func openSettings() {
+        guard let view = view else { return }
+        let settings = SettingsScene(size: size, context: .midRunFromShop(gameScene))
+        settings.scaleMode = scaleMode
+        view.presentScene(settings, transition: .crossFade(withDuration: 0.3))
     }
 }

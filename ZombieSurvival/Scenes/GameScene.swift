@@ -4,10 +4,10 @@ import UIKit
 final class GameScene: SKScene {
     private(set) var player: Player!
     private(set) var economyManager = EconomyManager()
-    private var controlScheme: ControlScheme = ControlSchemeFactory.make(GameState().controlSchemeType)
+    private var controlScheme: ControlScheme = ControlSchemeFactory.make(SettingsStore.shared.controlSchemeType)
     private var waveManager: WaveManager!
     private var hud: HUD!
-    private var gameState = GameState()
+    private(set) var gameState = GameState()
 
     private var bullets: [Bullet] = []
     private var enemies: [Walker] = []
@@ -23,10 +23,36 @@ final class GameScene: SKScene {
     private let worldLayer = SKNode()
     private let controlsLayer = SKNode()
 
+    // MARK: - Run configuration (set before first presentation)
+
+    private var startingMapID: MapID = .original
+    private var startingDifficulty: Difficulty = .medium
+    private var pendingRestoreState: GameState?
+    /// Set only when restoring a save, so the round label can show the
+    /// saved round immediately instead of "GET READY" before the player's
+    /// first "Next Round" tap actually starts it (see applyRestoredState).
+    private var pendingDisplayRound: Int?
+
+    /// Fresh new run: round 1, no coins/weapons/perks. Call before the
+    /// scene is first presented.
+    func configureNewRun(mapID: MapID, difficulty: Difficulty) {
+        startingMapID = mapID
+        startingDifficulty = difficulty
+    }
+
+    /// Reconstruct a run from a saved GameState. Call before the scene is
+    /// first presented.
+    func configureRestoring(_ state: GameState) {
+        pendingRestoreState = state
+        startingMapID = state.selectedMap
+        startingDifficulty = state.difficulty
+    }
+
     /// didMove(to:) fires every time this scene is presented — including
-    /// re-presenting this exact instance after the shop closes. Without this
-    /// guard, returning from the shop would rebuild Player/WaveManager/HUD
-    /// from scratch and silently wipe round progress, health, and weapons.
+    /// re-presenting this exact instance after the shop/pause menu closes.
+    /// Without this guard, returning from either would rebuild Player/
+    /// WaveManager/HUD from scratch and silently wipe round progress,
+    /// health, and weapons.
     private var didSetup = false
 
     override func didMove(to view: SKView) {
@@ -34,7 +60,7 @@ final class GameScene: SKScene {
         didSetup = true
 
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
-        backgroundColor = SKColor(red: 0.08, green: 0.10, blue: 0.08, alpha: 1.0)
+        backgroundColor = startingMapID.backgroundColor
         scaleMode = .resizeFill
 
         addChild(worldLayer)
@@ -43,6 +69,10 @@ final class GameScene: SKScene {
         setupWaveManager()
         setupControls()
         setupHUD()
+
+        if let restoreState = pendingRestoreState {
+            applyRestoredState(restoreState)
+        }
     }
 
     private func setupArena() {
@@ -71,6 +101,7 @@ final class GameScene: SKScene {
         refreshHUD()
         hud.showNextRoundButton() // Round 1 also waits for the player to tap "Next Round".
         hud.showShopButton()
+        hud.showPauseButton()
     }
 
     private func setupWaveManager() {
@@ -84,6 +115,36 @@ final class GameScene: SKScene {
         ]
         waveManager = WaveManager(spawnPoints: spawnPoints)
         waveManager.delegate = self
+        waveManager.difficulty = startingDifficulty
+    }
+
+    /// Restores everything a save needs, always onto freshly-constructed
+    /// objects (fresh Player/WeaponInventory/WaveManager from the normal
+    /// setup above) — never onto pre-existing timer state. That's why the
+    /// "timer reset on load" guarantee holds with no special-case code:
+    /// gameClock starts at 0 (this is a brand new GameScene instance), and
+    /// every weapon/spawn timer is fresh by construction. No enemies exist;
+    /// the wave manager resumes at the saved round but stays inactive until
+    /// the player taps "Next Round".
+    private func applyRestoredState(_ state: GameState) {
+        player.restorePerks(state.ownedPerks)
+
+        for (index, type) in state.weaponSlots.enumerated() {
+            guard let type else { continue }
+            let weapon = type.makeWeapon()
+            weapon.overclockTier = state.overclockTiers[type] ?? 0
+            weapon.refillMagazine() // never restore a "was reloading" or partial-magazine state
+            player.inventory.equip(weapon, inSlot: index)
+        }
+        player.inventory.setActiveIndex(state.activeSlot)
+        player.inventory.refreshModifiers(perks: player.perks)
+
+        player.restoreHealth(state.playerHealth) // after perks: maxHealth depends on Vitality
+        economyManager.setCoins(state.coins)
+        waveManager.restoreRound(state.round)
+        pendingDisplayRound = state.round
+
+        refreshHUD()
     }
 
     // MARK: - Update loop
@@ -91,9 +152,9 @@ final class GameScene: SKScene {
     override func update(_ currentTime: TimeInterval) {
         let rawDelta = lastUpdateTime == 0 ? 0 : currentTime - lastUpdateTime
         lastUpdateTime = currentTime
-        // While the shop is open, isPaused (SKScene's own flag) stops
-        // SpriteKit from calling update() at all; this guard is a second,
-        // explicit line of defense matching that same intent.
+        // While the shop/pause menu is open, isPaused (SKScene's own flag)
+        // stops SpriteKit from calling update() at all; this guard is a
+        // second, explicit line of defense matching that same intent.
         guard !isPaused, !gameState.isGameOver else { return }
 
         // Clamped so a pause (or any frame hitch) can never teleport enemies
@@ -134,6 +195,7 @@ final class GameScene: SKScene {
 
         if controlScheme.isFiring, !aimVector.isZero, weapon.fire(at: currentTime) {
             spawnShots(direction: aimVector, weapon: weapon)
+            AudioManagerProvider.shared.playSFX("weapon_fire_\(weapon.weaponType.rawValue)")
         }
     }
 
@@ -251,6 +313,7 @@ final class GameScene: SKScene {
     private func handleEnemyDeath(_ enemy: Walker) {
         waveManager.registerDeath(of: enemy)
         spawnCoin(at: enemy.position)
+        AudioManagerProvider.shared.playSFX("zombie_death")
 
         let shrink = SKAction.scale(to: 0, duration: Balance.zombieDeathEffectDuration)
         let fade = SKAction.fadeOut(withDuration: Balance.zombieDeathEffectDuration)
@@ -300,10 +363,11 @@ final class GameScene: SKScene {
     }
 
     private func refreshHUD() {
+        let displayRound = waveManager.isRoundActive ? waveManager.currentRound : max(waveManager.currentRound, pendingDisplayRound ?? 0)
         hud.update(with: HUDDisplayState(
             health: player.health,
             maxHealth: player.maxHealth,
-            round: waveManager.currentRound,
+            round: displayRound,
             ammo: player.activeWeapon?.ammoInMagazine ?? 0,
             magazineSize: player.activeWeapon?.magazineSize ?? 0,
             isReloading: player.activeWeapon?.isReloading ?? false,
@@ -314,9 +378,9 @@ final class GameScene: SKScene {
         ))
     }
 
-    /// Not wired to any save/load trigger yet (that's Phase 3) — this is the
-    /// designated integration point: a fresh, accurate GameState on demand
-    /// from the live objects that are the real source of truth.
+    /// Keeps `gameState` accurate from the live objects (the real source of
+    /// truth) every frame, so SaveManager.save(gameScene.gameState, ...) and
+    /// SettingsScene's locked-difficulty display always read fresh data.
     private func syncGameState() {
         gameState.round = waveManager.currentRound
         gameState.isRoundActive = waveManager.isRoundActive
@@ -325,8 +389,9 @@ final class GameScene: SKScene {
         gameState.ammoInMagazine = player.activeWeapon?.ammoInMagazine ?? 0
         gameState.magazineSize = player.activeWeapon?.magazineSize ?? 0
         gameState.isReloading = player.activeWeapon?.isReloading ?? false
+        gameState.controlSchemeType = controlScheme.type
         gameState.coins = economyManager.coins
-        gameState.ownedWeapons = Array(player.inventory.ownedTypes)
+        gameState.weaponSlots = player.inventory.slots.map { $0?.weaponType }
         // Mystery Crate can legitimately roll a type the player already owns
         // into the other slot, so two slots can share a WeaponType — keep
         // the higher tier rather than crashing on the duplicate key.
@@ -336,12 +401,28 @@ final class GameScene: SKScene {
         )
         gameState.activeSlot = player.inventory.activeIndex
         gameState.ownedPerks = player.perks
+        gameState.selectedMap = startingMapID
+        gameState.difficulty = startingDifficulty
     }
 
     private func checkPlayerDeath() {
         guard !player.isAlive, !gameState.isGameOver else { return }
         gameState.isGameOver = true
-        hud.showGameOver(round: waveManager.currentRound)
+        hud.showGameOver(round: waveManager.currentRound, hasAnySave: SaveManager.hasAnySave())
+    }
+
+    // MARK: - Control scheme
+
+    /// Called whenever GameScene resumes from the shop or pause menu, in
+    /// case Settings changed the control scheme while paused. Takes effect
+    /// immediately: tears down the old joystick nodes and installs the new
+    /// scheme's.
+    func refreshControlSchemeIfNeeded() {
+        let desired = SettingsStore.shared.controlSchemeType
+        guard desired != controlScheme.type else { return }
+        controlsLayer.removeAllChildren()
+        controlScheme = ControlSchemeFactory.make(desired)
+        controlScheme.install(in: controlsLayer, sceneSize: size)
     }
 
     // MARK: - Touches
@@ -356,14 +437,20 @@ final class GameScene: SKScene {
             case HUD.shopButtonName:
                 openShop()
                 return
+            case HUD.pauseButtonName:
+                openPauseMenu()
+                return
             case HUD.swapWeaponButtonName:
                 player.inventory.swapActive()
                 return
             case HUD.restartButtonName:
                 restartGame()
                 return
-            case HUD.mainMenuButtonName:
-                // Stubbed: no main menu exists yet in this phase.
+            case HUD.restartFromSaveButtonName:
+                restartFromLastSave()
+                return
+            case HUD.quitButtonName:
+                quitToMainMenu()
                 return
             default:
                 continue
@@ -397,11 +484,38 @@ final class GameScene: SKScene {
         view?.presentScene(shop, transition: .crossFade(withDuration: 0.3))
     }
 
+    private func openPauseMenu() {
+        syncGameState() // guarantee Save Game (reachable from the pause menu) reads fresh state
+        isPaused = true
+        let pause = PauseMenuScene(size: size, gameScene: self)
+        pause.scaleMode = scaleMode
+        view?.presentScene(pause, transition: .crossFade(withDuration: 0.3))
+    }
+
+    /// Fresh run, round 1, no coins/weapons/perks — but keeps the same map
+    /// and difficulty this run was playing, rather than silently resetting
+    /// to defaults.
     private func restartGame() {
         guard let view = view else { return }
         let newScene = GameScene(size: size)
+        newScene.configureNewRun(mapID: startingMapID, difficulty: startingDifficulty)
         newScene.scaleMode = scaleMode
         view.presentScene(newScene, transition: .fade(withDuration: 0.4))
+    }
+
+    private func restartFromLastSave() {
+        guard let slot = SaveManager.mostRecentSlot(), let state = SaveManager.loadState(fromSlot: slot), let view = view else { return }
+        let newScene = GameScene(size: size)
+        newScene.configureRestoring(state)
+        newScene.scaleMode = scaleMode
+        view.presentScene(newScene, transition: .fade(withDuration: 0.4))
+    }
+
+    private func quitToMainMenu() {
+        guard let view = view else { return }
+        let menu = MainMenuScene(size: size)
+        menu.scaleMode = scaleMode
+        view.presentScene(menu, transition: .fade(withDuration: 0.4))
     }
 }
 

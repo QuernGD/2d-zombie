@@ -52,6 +52,18 @@ final class Player: SKNode {
         health = max(0, health - amount)
     }
 
+    /// Load-time restoration only — sets perks directly with no Vitality
+    /// health top-up (health is restored separately, right after this).
+    func restorePerks(_ restoredPerks: Set<Perk>) {
+        perks = restoredPerks
+    }
+
+    /// Load-time restoration only — sets health directly (clamped to
+    /// maxHealth, which depends on perks, so call this after restorePerks).
+    func restoreHealth(_ amount: CGFloat) {
+        health = min(max(0, amount), maxHealth)
+    }
+
     /// One-time purchase effect. Vitality tops up current health by the
     /// exact amount max health just increased, so buying it never makes an
     /// already-hurt player's health bar look worse.
