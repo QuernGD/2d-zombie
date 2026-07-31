@@ -1,0 +1,469 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		E8173604FE7046EA9843A017 /* ZombieSurvivalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 501E43EFD52E4F46BC4F85DF /* ZombieSurvivalApp.swift */; };
+		DA6750AF1B8F422BBAD433BF /* GameContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20D91877833D48239A4184A5 /* GameContainerView.swift */; };
+		41CB7867B85842F4BBA29F11 /* Balance.swift in Sources */ = {isa = PBXBuildFile; fileRef = F597AF3587AB433CAA6F7B00 /* Balance.swift */; };
+		64163DFDACBA43FBB93E4F15 /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D828CB493D469390B642A2 /* Geometry.swift */; };
+		D26F51CF74374697910F2D7D /* AssetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806A4F59AB9B4BBD92D8B649 /* AssetProvider.swift */; };
+		0DC4AFF8115B47F29D52994C /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18AA272230824E039184A00D /* GameState.swift */; };
+		E6AC40D08433492EBAA46222 /* ControlScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E44572FF0954C0A8A2541ED /* ControlScheme.swift */; };
+		E5F226FF3E034D918CEDA489 /* VirtualJoystick.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E44102C11D74BBE82C5D9B7 /* VirtualJoystick.swift */; };
+		FE3848EBA9174E2D94635281 /* DualStickControlScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDEE6B84107C479D94BC6C25 /* DualStickControlScheme.swift */; };
+		A9BA6E346BE247E7860E9555 /* SingleStickAutoAimControlScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09F28804B126497A8651EE19 /* SingleStickAutoAimControlScheme.swift */; };
+		C9161608AA30484784751BA3 /* Weapon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A24722BA27064EC4A0ACE615 /* Weapon.swift */; };
+		06B62901E6DC4AEDA1EBD5CE /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 041E1E27B46040EE9EDDCC25 /* Player.swift */; };
+		EFA6036767434FD0840AB303 /* Bullet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1047C6CD3041F5BFE60ABC /* Bullet.swift */; };
+		8B309C01BECC4C29B43CE645 /* Enemy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C905F032B64039AC6CA7F4 /* Enemy.swift */; };
+		A7B7868F79D9430DA12FEBBB /* Walker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0069CBF9F70C4E9289994676 /* Walker.swift */; };
+		DC7075D96D0F4BAEBD72A4AF /* WaveManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73BA89F758824A709342AB13 /* WaveManager.swift */; };
+		9724D18C35094013B22E6F55 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB359E7340C4A1EA3BB33A8 /* GameScene.swift */; };
+		1B0CE7A98BFD4DAF9F144EC5 /* HUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46F448CCB5A49E0ABFF5967 /* HUD.swift */; };
+		37766EB2F4FD4A0FB9CCC78D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A3D94D442EE416AABD5FFD5 /* Assets.xcassets */; };
+		A007BD4D93F143EFBC510B52 /* Assets in Resources */ = {isa = PBXBuildFile; fileRef = BA75DD843926434D8A23C4E4 /* Assets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2F59C3B7A3EB42BA8CB7A763 /* ZombieSurvival.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZombieSurvival.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		501E43EFD52E4F46BC4F85DF /* ZombieSurvivalApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZombieSurvivalApp.swift; sourceTree = "<group>"; };
+		20D91877833D48239A4184A5 /* GameContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameContainerView.swift; sourceTree = "<group>"; };
+		F597AF3587AB433CAA6F7B00 /* Balance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Balance.swift; sourceTree = "<group>"; };
+		97D828CB493D469390B642A2 /* Geometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geometry.swift; sourceTree = "<group>"; };
+		806A4F59AB9B4BBD92D8B649 /* AssetProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetProvider.swift; sourceTree = "<group>"; };
+		18AA272230824E039184A00D /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
+		9E44572FF0954C0A8A2541ED /* ControlScheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlScheme.swift; sourceTree = "<group>"; };
+		6E44102C11D74BBE82C5D9B7 /* VirtualJoystick.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualJoystick.swift; sourceTree = "<group>"; };
+		BDEE6B84107C479D94BC6C25 /* DualStickControlScheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DualStickControlScheme.swift; sourceTree = "<group>"; };
+		09F28804B126497A8651EE19 /* SingleStickAutoAimControlScheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleStickAutoAimControlScheme.swift; sourceTree = "<group>"; };
+		A24722BA27064EC4A0ACE615 /* Weapon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Weapon.swift; sourceTree = "<group>"; };
+		041E1E27B46040EE9EDDCC25 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+		6D1047C6CD3041F5BFE60ABC /* Bullet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bullet.swift; sourceTree = "<group>"; };
+		B4C905F032B64039AC6CA7F4 /* Enemy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Enemy.swift; sourceTree = "<group>"; };
+		0069CBF9F70C4E9289994676 /* Walker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Walker.swift; sourceTree = "<group>"; };
+		73BA89F758824A709342AB13 /* WaveManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveManager.swift; sourceTree = "<group>"; };
+		9FB359E7340C4A1EA3BB33A8 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
+		C46F448CCB5A49E0ABFF5967 /* HUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUD.swift; sourceTree = "<group>"; };
+		2A3D94D442EE416AABD5FFD5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BA75DD843926434D8A23C4E4 /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Assets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		964F5A85B63E44D990F67DEF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7C84A1ED0BCC49AC96EEA18A = {
+			isa = PBXGroup;
+			children = (
+				17C84D3594A34893B29209D0 /* ZombieSurvival */,
+				C133C87F1E5347FE90A830ED /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		17C84D3594A34893B29209D0 = {
+			isa = PBXGroup;
+			children = (
+				501E43EFD52E4F46BC4F85DF /* ZombieSurvivalApp.swift */,
+				20D91877833D48239A4184A5 /* GameContainerView.swift */,
+				FC5580F3FBB8460E9976082F /* Config */,
+				AAB23E2341B44F82BD6D6A21 /* Support */,
+				2AC98DE49A424DE89F996A61 /* State */,
+				727D514C5B2C4ABEA12797DE /* Controls */,
+				40B51B4A47954C7AA59EDDBB /* Entities */,
+				86152ECB866D434791DE60D9 /* Systems */,
+				7E6803C7F56A4999B6A76C49 /* Scenes */,
+				0C358AAE9DB64E3591088C38 /* HUD */,
+				2A3D94D442EE416AABD5FFD5 /* Assets.xcassets */,
+				BA75DD843926434D8A23C4E4 /* Assets */,
+			);
+			path = "ZombieSurvival";
+			sourceTree = "<group>";
+		};
+		FC5580F3FBB8460E9976082F = {
+			isa = PBXGroup;
+			children = (
+				F597AF3587AB433CAA6F7B00 /* Balance.swift */,
+			);
+			path = "Config";
+			sourceTree = "<group>";
+		};
+		AAB23E2341B44F82BD6D6A21 = {
+			isa = PBXGroup;
+			children = (
+				97D828CB493D469390B642A2 /* Geometry.swift */,
+				806A4F59AB9B4BBD92D8B649 /* AssetProvider.swift */,
+			);
+			path = "Support";
+			sourceTree = "<group>";
+		};
+		2AC98DE49A424DE89F996A61 = {
+			isa = PBXGroup;
+			children = (
+				18AA272230824E039184A00D /* GameState.swift */,
+			);
+			path = "State";
+			sourceTree = "<group>";
+		};
+		727D514C5B2C4ABEA12797DE = {
+			isa = PBXGroup;
+			children = (
+				9E44572FF0954C0A8A2541ED /* ControlScheme.swift */,
+				6E44102C11D74BBE82C5D9B7 /* VirtualJoystick.swift */,
+				BDEE6B84107C479D94BC6C25 /* DualStickControlScheme.swift */,
+				09F28804B126497A8651EE19 /* SingleStickAutoAimControlScheme.swift */,
+			);
+			path = "Controls";
+			sourceTree = "<group>";
+		};
+		40B51B4A47954C7AA59EDDBB = {
+			isa = PBXGroup;
+			children = (
+				A24722BA27064EC4A0ACE615 /* Weapon.swift */,
+				041E1E27B46040EE9EDDCC25 /* Player.swift */,
+				6D1047C6CD3041F5BFE60ABC /* Bullet.swift */,
+				B4C905F032B64039AC6CA7F4 /* Enemy.swift */,
+				0069CBF9F70C4E9289994676 /* Walker.swift */,
+			);
+			path = "Entities";
+			sourceTree = "<group>";
+		};
+		86152ECB866D434791DE60D9 = {
+			isa = PBXGroup;
+			children = (
+				73BA89F758824A709342AB13 /* WaveManager.swift */,
+			);
+			path = "Systems";
+			sourceTree = "<group>";
+		};
+		7E6803C7F56A4999B6A76C49 = {
+			isa = PBXGroup;
+			children = (
+				9FB359E7340C4A1EA3BB33A8 /* GameScene.swift */,
+			);
+			path = "Scenes";
+			sourceTree = "<group>";
+		};
+		0C358AAE9DB64E3591088C38 = {
+			isa = PBXGroup;
+			children = (
+				C46F448CCB5A49E0ABFF5967 /* HUD.swift */,
+			);
+			path = "HUD";
+			sourceTree = "<group>";
+		};
+		C133C87F1E5347FE90A830ED = {
+			isa = PBXGroup;
+			children = (
+				2F59C3B7A3EB42BA8CB7A763 /* ZombieSurvival.app */,
+			);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		702AFFA1B0294CE6818C408C /* ZombieSurvival */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 659B3601941C4AF1AC6236D4 /* Build configuration list for PBXNativeTarget "ZombieSurvival" */;
+			buildPhases = (
+				AE977BA2EB804723B7C4CA80 /* Sources */,
+				964F5A85B63E44D990F67DEF /* Frameworks */,
+				6E9F6E81B8B446A39DB4A66B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ZombieSurvival;
+			productName = ZombieSurvival;
+			productReference = 2F59C3B7A3EB42BA8CB7A763 /* ZombieSurvival.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8E9A8A2296BD40CFB0909F87 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1510;
+				LastUpgradeCheck = 1510;
+				TargetAttributes = {
+					702AFFA1B0294CE6818C408C = {
+						CreatedOnToolsVersion = 15.1;
+					};
+				};
+			};
+			buildConfigurationList = 57A36B43A9204208B0E197B4 /* Build configuration list for PBXProject "ZombieSurvival" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 7C84A1ED0BCC49AC96EEA18A;
+			productRefGroup = C133C87F1E5347FE90A830ED /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				702AFFA1B0294CE6818C408C /* ZombieSurvival */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6E9F6E81B8B446A39DB4A66B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				37766EB2F4FD4A0FB9CCC78D /* Assets.xcassets in Resources */,
+				A007BD4D93F143EFBC510B52 /* Assets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AE977BA2EB804723B7C4CA80 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E8173604FE7046EA9843A017 /* ZombieSurvivalApp.swift in Sources */,
+				DA6750AF1B8F422BBAD433BF /* GameContainerView.swift in Sources */,
+				41CB7867B85842F4BBA29F11 /* Balance.swift in Sources */,
+				64163DFDACBA43FBB93E4F15 /* Geometry.swift in Sources */,
+				D26F51CF74374697910F2D7D /* AssetProvider.swift in Sources */,
+				0DC4AFF8115B47F29D52994C /* GameState.swift in Sources */,
+				E6AC40D08433492EBAA46222 /* ControlScheme.swift in Sources */,
+				E5F226FF3E034D918CEDA489 /* VirtualJoystick.swift in Sources */,
+				FE3848EBA9174E2D94635281 /* DualStickControlScheme.swift in Sources */,
+				A9BA6E346BE247E7860E9555 /* SingleStickAutoAimControlScheme.swift in Sources */,
+				C9161608AA30484784751BA3 /* Weapon.swift in Sources */,
+				06B62901E6DC4AEDA1EBD5CE /* Player.swift in Sources */,
+				EFA6036767434FD0840AB303 /* Bullet.swift in Sources */,
+				8B309C01BECC4C29B43CE645 /* Enemy.swift in Sources */,
+				A7B7868F79D9430DA12FEBBB /* Walker.swift in Sources */,
+				DC7075D96D0F4BAEBD72A4AF /* WaveManager.swift in Sources */,
+				9724D18C35094013B22E6F55 /* GameScene.swift in Sources */,
+				1B0CE7A98BFD4DAF9F144EC5 /* HUD.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A72C4EC7A77A4735A0B3B8AA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		D0D4396EEBF14CD19E7C679F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0801CE25A5C0402EB1546BF1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.querngd.ZombieSurvival";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0934FA10F9C442A29B4ED775 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.querngd.ZombieSurvival";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		57A36B43A9204208B0E197B4 /* Build configuration list for PBXProject "ZombieSurvival" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A72C4EC7A77A4735A0B3B8AA /* Debug */,
+				D0D4396EEBF14CD19E7C679F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		659B3601941C4AF1AC6236D4 /* Build configuration list for PBXNativeTarget "ZombieSurvival" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0801CE25A5C0402EB1546BF1 /* Debug */,
+				0934FA10F9C442A29B4ED775 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 8E9A8A2296BD40CFB0909F87 /* Project object */;
+}
