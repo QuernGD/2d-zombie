@@ -17,8 +17,18 @@ a placeholder shape with a real sprite, add an image whose name matches the
 | Player | `player` |
 | Walker (zombie) | `walker` |
 | Bullet | `bullet` |
+| Coin | `coin` |
 
 As soon as an image with that name resolves via `UIImage(named:)`,
 `AssetProvider` swaps the placeholder shape for the real sprite — no other
 code changes required. Add new cases to `EntityVisualKind` for future
 entity types (new enemy types, weapons, etc.) following the same pattern.
+
+## Animated sprites
+
+For numbered animation frame sequences (idle/move/attack cycles, not just
+a single static image), use `AssetProvider.loadTextures` /
+`makeAnimatedNode(for:frames:radius:)` with an `AnimationFrameSequence`
+instead of the single-image path above. See
+`Assets/Enemies/Zombie/README.md` for a concrete example (the Walker's
+idle/move/attack frames).
