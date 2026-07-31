@@ -5,10 +5,15 @@ iOS 17+. Phase 1 was the core loop (move/aim/shoot/survive rounds/die).
 Phase 2 added the economy: coins, a round-end shop, 8 weapons, overclocking,
 perks, and animated zombie sprites. Phase 3 added a save system (3
 manual-save slots), a real main menu, map/difficulty select, a full
-settings screen, and an in-run pause menu. Phase 4 (this pass) replaces all
-of Phase 2's placeholder/skeleton art with a full spritesheet-based art
-pack: real Player/Zombie(x4) character animations, weapon fire animations,
+settings screen, and an in-run pause menu. Phase 4 replaced all of
+Phase 2's placeholder/skeleton art with a full spritesheet-based art pack:
+real Player/Zombie(x4) character animations, weapon fire animations,
 tile-based arenas for both maps, 9-sliced UI panels, and a real coin icon.
+Phase 5 added a CI pipeline that builds an unsigned, sideloadable IPA on
+every push. Phase 6 (this pass) adds real wall/obstacle collision to both
+maps (with genuinely different obstacle layouts per map), and fixes a
+dual-stick control bug where the move and fire sticks couldn't be held at
+the same time.
 
 ## Running it
 
@@ -376,13 +381,10 @@ Xcode and adjust, not as ground truth. They're isolated to a handful of
 `TileCoord` constants specifically so nudging them is a one-line change
 per tile role.
 
-`TileMapBuilder` is purely decorative: it draws a full floor grid, a
-wall ring around the border, and a handful of scattered obstacle tiles at
-fixed fractional positions — there is **no collision** added, so
-walls/obstacles don't block player or zombie movement. Adding that wasn't
-asked for and would be a meaningfully larger change (physics bodies, a
-`Enemy`-side pathfinding rewrite for straight-line pursuit to route around
-obstacles) than "arrange some tiles."
+`TileMapBuilder` draws a full floor grid, a wall ring around the border,
+and a handful of scattered obstacle tiles at fixed fractional positions.
+**As of Phase 6, walls and obstacles are solid** — see the Phase 6 section
+below for how collision was added.
 
 Map-to-tileset assignment: `.original` ("The Yard") → Wasteland,
 `.ashyard` ("Ashyard") → Interior. Both maps now have genuinely different
@@ -440,6 +442,89 @@ now-unused `.coin` case from `EntityVisualKind`).
   everything above was verified by direct pixel measurement and careful
   manual code review only.
 
+## Architecture — Phase 6 (new/changed this pass)
+
+| File | Responsibility |
+|---|---|
+| `Support/Geometry.swift` | Adds `circleIntersectsAnyRect` and `resolveCollision(from:to:radius:solidRects:)` — shared axis-separated circle-vs-rects collision, used by both `Player.move` and `Walker.update`. |
+| `Systems/TileMapBuilder.swift` | `build(for:size:)` now returns a `Result(node:solidRects:)` instead of a bare node — every wall/obstacle tile placed contributes its world-space rect. Each map also gets its own distinct `obstacleLayout` (see below) instead of sharing one fractional pattern. |
+| `Entities/Enemy.swift`, `Entities/Walker.swift`, `Entities/Player.swift` | `update`/`move` now take a `solidRects: [CGRect]` parameter and resolve movement against it. |
+| `Scenes/GameScene.swift` | Stores `solidRects` (captured from `TileMapBuilder.build` in `setupArena`) and passes it to both `player.move` and `enemy.update`. Also sets `view.isMultipleTouchEnabled = true` in `didMove(to:)` — see the control fix below. |
+| `Controls/DualStickControlScheme.swift` | Adds a static "MOVE"/"FIRE" legend at the bottom of each half of the screen. |
+
+### Map collision
+
+Player and zombie movement now collide with wall and obstacle tiles.
+Implementation is deliberately simple and consistent with how this
+codebase already does movement (manual math, not SpriteKit physics
+bodies) rather than introducing `SKPhysicsBody`/contact bitmasks as a new
+parallel system:
+
+- `TileMapBuilder.build` collects the world-space rect of every wall or
+  obstacle tile it places into `solidRects`, alongside the visual node.
+- `Geometry.swift`'s `resolveCollision` does simple axis-separated
+  collision: try the full proposed move, then X-only, then Y-only, then
+  give up and stay put. This lets the player/zombies **slide along** a
+  wall or obstacle edge instead of just stopping dead or clipping through
+  a corner.
+- Both `Player.move` and `Walker.update` call it with their own radius
+  (`Balance.playerRadius` / `Balance.zombieRadius`).
+
+**Scope note**: this covers player/zombie movement only, since that's
+what was asked for. Bullets still pass through walls (Bullet has no
+notion of the map), and Walker still walks in a straight line at the
+player rather than pathfinding around an obstacle — it just stops/slides
+at one, same as the player. Both are called out in "What's stubbed" above
+as deliberate scope cuts, not oversights.
+
+### Making the two maps genuinely different
+
+Beyond the different tileset (Wasteland vs. Interior, from Phase 4), each
+map now has its own obstacle **arrangement**, not just different obstacle
+textures scattered in the same pattern:
+
+- **Wasteland** (`Balance.wastelandObstacleLayout`): a loose, irregular
+  10-position scatter — reads like scattered wreckage/crates.
+- **Interior** (`Balance.interiorObstacleLayout`): two neat, grid-aligned
+  8-position rows — reads like rows of desks/lockers.
+
+Both are still fractional positions (scale with arena size, same reasoning
+as Phase 4's original layout) and still best-guess tile art — the Phase 4
+"verify tile indices in Xcode" caveat applies here too.
+
+### Control fix: dual-stick couldn't move and shoot at the same time
+
+**Root cause found**: `UIView.isMultipleTouchEnabled` defaults to `false`,
+and nothing in this codebase ever set it to `true`. That means the system
+only ever tracked **one touch at a time** — holding the move stick with
+one finger meant a second finger touching the fire stick never generated
+a `touchesBegan` event at all, so `DualStickControlScheme` never even saw
+it. It wasn't a logic bug in the control scheme itself (that code already
+handled independent touches correctly); the touches just never arrived.
+
+**Fix**: `GameScene.didMove(to:)` now sets `view.isMultipleTouchEnabled =
+true`. With that one line, both joysticks can be held simultaneously,
+which is all "move and shoot at the same time" required.
+
+**On the "add a shoot button" ask**: re-reading dual-stick's existing
+design — the right-side joystick already *is* a shoot button in every
+sense described: pressing it fires, it aims wherever it's dragged with no
+requirement that a zombie be there, and holding it fires continuously at
+the equipped weapon's normal cadence rather than one shot per tap (there's
+no separate "faster fire" mechanic — fire rate is fixed per weapon, per
+`Balance.swift`; "hold to keep firing" was already the behavior once the
+touch actually arrived). So no new control was added — the multitouch fix
+was the actual missing piece. What *was* added: a static "MOVE"/"FIRE"
+text legend at the bottom of each screen half (`DualStickControlScheme`),
+since both joysticks float (invisible until first touch, per
+`VirtualJoystick`'s design) and had no static hint telling a new player
+which half does what before their first touch.
+
+Single-stick + auto-aim mode was reviewed too — its move-only,
+auto-aim/auto-fire design was working as intended (Phase 1's spec for that
+mode) and only ever tracks one touch by design, so there was no
+multitouch bug to fix there; it's unchanged this pass.
+
 ## Balance as implemented (Phase 1, unchanged)
 
 - Zombie health: 150 base, +100 per round through round 9 (round 9 = 950),
@@ -479,11 +564,17 @@ All Phase 2 weapon/coin/overclock/perk numbers are placeholders in
   didn't ask for them to be triggered on hit/explosion/pickup, so they
   aren't yet. The AoE explosion and chain-lightning arc still use their
   Phase 2 placeholder shapes (a fading ring / a fading line).
-- **Tile-based arenas have no collision** — `TileMapBuilder`'s walls and
-  obstacles are purely decorative; player/zombie movement is unaffected by
-  them. See the Phase 4 section above.
 - **Tile indices are an unverified best guess** — see the Phase 4 section
   above for specifics on what to check in Xcode.
+- **Bullets pass through walls/obstacles** — Phase 6 added collision for
+  player/zombie movement only (what was asked for); bullet-vs-wall
+  collision would be a separate, bigger change (Bullet has no concept of
+  the map today) and wasn't part of this pass.
+- **No pathfinding around obstacles** — Walker still walks in a straight
+  line at the player and simply stops/slides along an obstacle's edge
+  (see Phase 6) rather than routing around it. Fine for scattered
+  obstacles in an open arena; would need real pathfinding for a maze-like
+  layout.
 - Not compiled with `xcodebuild`/Xcode in this environment (Linux, no
   Apple toolchain) — reviewed carefully by hand (including catching and
   fixing two real bugs along the way: the `didMove(to:)` re-presentation

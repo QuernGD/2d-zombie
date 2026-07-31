@@ -89,10 +89,12 @@ final class Walker: SKNode, Enemy {
         fatalError("init(coder:) has not been implemented")
     }
 
-    /// Straight-line pursuit. Sufficient for a single open arena; swap this
-    /// for real pathfinding (e.g. around obstacles) without touching
-    /// anything outside this method.
-    func update(currentTime: TimeInterval, deltaTime: TimeInterval, playerPosition: CGPoint) {
+    /// Straight-line pursuit, blocked by walls/obstacles via
+    /// resolveCollision (Geometry.swift) — sufficient for a single open
+    /// arena with scattered obstacles; swap this for real pathfinding
+    /// (routing around obstacles rather than just stopping/sliding at
+    /// them) without touching anything outside this method.
+    func update(currentTime: TimeInterval, deltaTime: TimeInterval, playerPosition: CGPoint, solidRects: [CGRect]) {
         guard isAlive else { return }
         // Let a hit/knocked reaction play out undisturbed, same idea as the
         // old one-shot attack animation: brief hit-stun while it plays.
@@ -106,7 +108,8 @@ final class Walker: SKNode, Enemy {
             return
         }
         let step = moveSpeed * CGFloat(deltaTime)
-        position = CGPoint(x: position.x + dx / dist * step, y: position.y + dy / dist * step)
+        let attempted = CGPoint(x: position.x + dx / dist * step, y: position.y + dy / dist * step)
+        position = resolveCollision(from: position, to: attempted, radius: Balance.zombieRadius, solidRects: solidRects)
         if let visualSprite, abs(dx) > 0.01 {
             visualSprite.xScale = (dx < 0 ? -1 : 1) * abs(visualSprite.xScale)
         }

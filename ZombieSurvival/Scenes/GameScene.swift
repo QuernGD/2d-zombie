@@ -12,6 +12,11 @@ final class GameScene: SKScene {
     private var bullets: [Bullet] = []
     private var enemies: [Walker] = []
     private var coins: [CoinPickup] = []
+    /// World-space rects of every solid (wall/obstacle) tile in the current
+    /// map, set once in setupArena. Player.move and Walker.update both
+    /// resolve their movement against this via Geometry.swift's
+    /// resolveCollision.
+    private var solidRects: [CGRect] = []
 
     private var lastUpdateTime: TimeInterval = 0
     /// Scene-local clock that only advances while unpaused. Every gameplay
@@ -56,6 +61,13 @@ final class GameScene: SKScene {
     private var didSetup = false
 
     override func didMove(to view: SKView) {
+        // UIView.isMultipleTouchEnabled defaults to false, so without this
+        // the system only ever tracks one touch at a time — holding the
+        // move stick meant a second finger on the fire stick never even
+        // generated a touchesBegan event. This is the actual root cause of
+        // "can't move and shoot at the same time" in dual-stick mode.
+        view.isMultipleTouchEnabled = true
+
         guard !didSetup else { return }
         didSetup = true
 
@@ -78,9 +90,12 @@ final class GameScene: SKScene {
     /// Tile-based arena background (Wasteland/Interior tileset per map).
     /// backgroundColor was already set to startingMapID's tint in didMove,
     /// before this runs, so it still shows through as a fallback on the rare
-    /// chance the tileset image can't be loaded.
+    /// chance the tileset image can't be loaded. Also captures the solid
+    /// wall/obstacle rects that block player/enemy movement.
     private func setupArena() {
-        worldLayer.addChild(TileMapBuilder.build(for: startingMapID, size: size))
+        let result = TileMapBuilder.build(for: startingMapID, size: size)
+        worldLayer.addChild(result.node)
+        solidRects = result.solidRects
     }
 
     private func setupPlayer() {
@@ -182,7 +197,7 @@ final class GameScene: SKScene {
 
     private func updatePlayer(deltaTime: TimeInterval, currentTime: TimeInterval) {
         let bounds = CGRect(x: -size.width / 2, y: -size.height / 2, width: size.width, height: size.height)
-        player.move(by: controlScheme.movementVector, deltaTime: deltaTime, bounds: bounds)
+        player.move(by: controlScheme.movementVector, deltaTime: deltaTime, bounds: bounds, solidRects: solidRects)
 
         let aimVector = controlScheme.aimVector
         if !aimVector.isZero {
@@ -301,7 +316,7 @@ final class GameScene: SKScene {
 
     private func updateEnemies(deltaTime: TimeInterval, currentTime: TimeInterval) {
         for enemy in enemies where enemy.isAlive {
-            enemy.update(currentTime: currentTime, deltaTime: deltaTime, playerPosition: player.position)
+            enemy.update(currentTime: currentTime, deltaTime: deltaTime, playerPosition: player.position, solidRects: solidRects)
             let contactDistance = Balance.zombieRadius + Balance.playerRadius
             if distance(enemy.position, player.position) < contactDistance, enemy.canAttack(at: currentTime) {
                 enemy.registerAttack(at: currentTime)

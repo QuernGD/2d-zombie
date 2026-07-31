@@ -271,11 +271,24 @@ enum Balance {
     static let wastelandObstacleTiles: [TileCoord] = [
         TileCoord(column: 4, row: 5), TileCoord(column: 5, row: 4), TileCoord(column: 5, row: 6)
     ]
+    /// Loose, irregular scatter (wreck/barrel/crate junk-pile feel) —
+    /// fractional (x, y) positions within the arena, deliberately not
+    /// grid-aligned so it reads differently from the Interior layout below.
+    static let wastelandObstacleLayout: [(CGFloat, CGFloat)] = [
+        (-0.35, -0.30), (0.35, 0.25), (0.00, 0.35), (-0.25, 0.15), (0.30, -0.20),
+        (-0.15, -0.05), (0.15, 0.05), (-0.40, 0.05), (0.40, -0.05), (0.05, -0.35)
+    ]
 
     static let interiorFloorTile = TileCoord(column: 0, row: 1)
     static let interiorWallTile = TileCoord(column: 0, row: 5) // no distinct brick tile in this sheet; a locker/cabinet tile stands in as a wall
     static let interiorObstacleTiles: [TileCoord] = [
         TileCoord(column: 6, row: 8), TileCoord(column: 6, row: 5), TileCoord(column: 2, row: 9)
+    ]
+    /// Two neat rows (furniture/desk/locker-row feel) — grid-aligned,
+    /// visually distinct from Wasteland's loose scatter above.
+    static let interiorObstacleLayout: [(CGFloat, CGFloat)] = [
+        (-0.30, 0.20), (-0.10, 0.20), (0.10, 0.20), (0.30, 0.20),
+        (-0.30, -0.20), (-0.10, -0.20), (0.10, -0.20), (0.30, -0.20)
     ]
 
     // MARK: - Phase 4: UI panels & health bar art

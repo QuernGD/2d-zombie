@@ -7,15 +7,26 @@ import SpriteKit
 /// guess — treat them as a starting point to eyeball and adjust in Xcode,
 /// not as verified ground truth.
 ///
-/// Purely decorative: it lays down floor/wall/obstacle tiles but adds no
-/// collision, so player/enemy movement is unaffected by walls or obstacles.
+/// Wall and obstacle tiles are solid: `build(for:size:)` also returns their
+/// world-space rects so GameScene can block player/enemy movement through
+/// them (see Geometry.swift's resolveCollision). Floor tiles are never
+/// solid.
 enum TileMapBuilder {
+    struct Result {
+        let node: SKNode
+        let solidRects: [CGRect]
+    }
+
     private struct Theme {
         let sheetName: String
         let subdirectory: String
         let floor: TileCoord
         let wall: TileCoord
-        let obstacles: [TileCoord]
+        let obstacleTiles: [TileCoord]
+        /// Fractional (x, y) positions within the arena, distinct per map so
+        /// the two maps' obstacle arrangement genuinely differs rather than
+        /// just reusing the same layout with different textures.
+        let obstacleLayout: [(CGFloat, CGFloat)]
     }
 
     private static func theme(for mapID: MapID) -> Theme {
@@ -27,7 +38,8 @@ enum TileMapBuilder {
                 subdirectory: "Assets/Tiles",
                 floor: Balance.wastelandFloorTile,
                 wall: Balance.wastelandWallTile,
-                obstacles: Balance.wastelandObstacleTiles
+                obstacleTiles: Balance.wastelandObstacleTiles,
+                obstacleLayout: Balance.wastelandObstacleLayout
             )
         case .ashyard:
             // Note: "Ashyard" implies an outdoor space, but it's mapped to
@@ -39,19 +51,21 @@ enum TileMapBuilder {
                 subdirectory: "Assets/Tiles",
                 floor: Balance.interiorFloorTile,
                 wall: Balance.interiorWallTile,
-                obstacles: Balance.interiorObstacleTiles
+                obstacleTiles: Balance.interiorObstacleTiles,
+                obstacleLayout: Balance.interiorObstacleLayout
             )
         }
     }
 
     private struct GridCell: Hashable { let col: Int; let row: Int }
 
-    /// Returns a node ready to add to the world layer, tiling `size` (the
-    /// scene's full extent, centered at 0,0 like everything else in
-    /// GameScene's worldLayer). Empty (no children) if the theme's floor
-    /// tile can't be loaded at all, so GameScene's plain background-color
-    /// fallback (set in didMove before this is called) still shows through.
-    static func build(for mapID: MapID, size: CGSize) -> SKNode {
+    /// Returns a node ready to add to the world layer (tiling `size`,
+    /// centered at 0,0 like everything else in GameScene's worldLayer) plus
+    /// the world-space rects of every solid (wall/obstacle) tile placed.
+    /// Both are empty if the theme's floor tile can't be loaded at all, so
+    /// GameScene's plain background-color fallback (set in didMove before
+    /// this is called) still shows through with no phantom collision.
+    static func build(for mapID: MapID, size: CGSize) -> Result {
         let container = SKNode()
         container.zPosition = 0
         let theme = theme(for: mapID)
@@ -61,27 +75,29 @@ enum TileMapBuilder {
             sheetName: theme.sheetName, subdirectory: theme.subdirectory,
             tileSize: tileSize, column: theme.floor.column, row: theme.floor.row
         ) != nil else {
-            return container
+            return Result(node: container, solidRects: [])
         }
 
         let columns = Int(ceil(size.width / CGFloat(tileSize))) + 2
         let rows = Int(ceil(size.height / CGFloat(tileSize))) + 2
         let halfCols = columns / 2
         let halfRows = rows / 2
-        let obstacleCells = obstacleCellPositions(columns: columns, rows: rows)
+        let obstacleCells = obstacleCellPositions(columns: columns, rows: rows, layout: theme.obstacleLayout)
 
+        var solidRects: [CGRect] = []
         var obstacleCursor = 0
         for row in 0..<rows {
             for col in 0..<columns {
                 let gridX = col - halfCols
                 let gridY = row - halfRows
                 let isBorder = col == 0 || row == 0 || col == columns - 1 || row == rows - 1
+                let isObstacle = !theme.obstacleTiles.isEmpty && obstacleCells.contains(GridCell(col: gridX, row: gridY))
 
                 let tileCoord: TileCoord
                 if isBorder {
                     tileCoord = theme.wall
-                } else if !theme.obstacles.isEmpty, obstacleCells.contains(GridCell(col: gridX, row: gridY)) {
-                    tileCoord = theme.obstacles[obstacleCursor % theme.obstacles.count]
+                } else if isObstacle {
+                    tileCoord = theme.obstacleTiles[obstacleCursor % theme.obstacleTiles.count]
                     obstacleCursor += 1
                 } else {
                     tileCoord = theme.floor
@@ -92,22 +108,28 @@ enum TileMapBuilder {
                     tileSize: tileSize, column: tileCoord.column, row: tileCoord.row
                 ) else { continue }
 
+                let tilePosition = CGPoint(x: CGFloat(gridX) * CGFloat(tileSize), y: CGFloat(gridY) * CGFloat(tileSize))
                 let tile = SKSpriteNode(texture: texture)
                 tile.size = CGSize(width: tileSize, height: tileSize)
-                tile.position = CGPoint(x: CGFloat(gridX) * CGFloat(tileSize), y: CGFloat(gridY) * CGFloat(tileSize))
+                tile.position = tilePosition
                 container.addChild(tile)
+
+                if isBorder || isObstacle {
+                    solidRects.append(CGRect(
+                        x: tilePosition.x - CGFloat(tileSize) / 2, y: tilePosition.y - CGFloat(tileSize) / 2,
+                        width: CGFloat(tileSize), height: CGFloat(tileSize)
+                    ))
+                }
             }
         }
-        return container
+        return Result(node: container, solidRects: solidRects)
     }
 
-    /// A handful of fixed fractional positions scattered through the
-    /// interior (never on the border ring), so obstacle placement scales
-    /// with arena size instead of a hardcoded pixel position that only
-    /// looks right at one resolution.
-    private static func obstacleCellPositions(columns: Int, rows: Int) -> Set<GridCell> {
-        let fractions: [(CGFloat, CGFloat)] = [(-0.35, -0.3), (0.35, 0.25), (0.0, 0.35), (-0.25, 0.15), (0.3, -0.2)]
-        return Set(fractions.map { fx, fy in
+    /// Converts a theme's fractional (x, y) obstacle layout into concrete
+    /// grid cells, scaling with arena size instead of a hardcoded pixel
+    /// position that only looks right at one resolution.
+    private static func obstacleCellPositions(columns: Int, rows: Int, layout: [(CGFloat, CGFloat)]) -> Set<GridCell> {
+        Set(layout.map { fx, fy in
             GridCell(col: Int((fx * CGFloat(columns)).rounded()), row: Int((fy * CGFloat(rows)).rounded()))
         })
     }
