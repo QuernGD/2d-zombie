@@ -525,6 +525,72 @@ auto-aim/auto-fire design was working as intended (Phase 1's spec for that
 mode) and only ever tracks one touch by design, so there was no
 multitouch bug to fix there; it's unchanged this pass.
 
+## Architecture — Phase 7 (new/changed this pass)
+
+| File | Responsibility |
+|---|---|
+| `Config/Balance.swift` | Adds `MapStructure` (a named, multi-tile rectangular "real object" — a car, a crate stack, a furniture cluster), floor-variant tile arrays, corrected wall tiles, and per-map named structures + their placements. |
+| `Systems/TileMapBuilder.swift` | Rewritten to composite three layers instead of one flat floor + scattered single tiles: randomized floor variants, small single-tile scatter clutter, and named multi-tile structures stamped on top (with their own solid rects). |
+
+### The map was "just blocks scattered everywhere" — here's what changed
+
+Phase 4/6 built the tile system but only ever placed **one repeated single
+tile** for the wall and for each scattered "obstacle" — visually flat, and
+with two real mistakes: `wastelandWallTile` was pointed at a wood crate
+tile (not a wall), and `interiorWallTile` was pointed at the floor's own
+baseboard trim (not a wall) — both were guesses from a thumbnail that
+turned out wrong once actually verified. This pass:
+
+1. **Re-verified every tile coordinate against an annotated, labeled
+   render of both sheets** (cropped and grid-labeled at each cell so every
+   pick below could be checked directly, not eyeballed from a thumbnail).
+   This caught and fixed both wall-tile mistakes above.
+2. **Added `MapStructure`**: a named rectangular block of tiles (e.g. "4
+   tiles wide, 2 tall, starting at sheet position (0,5)") stamped onto the
+   map as one real recognizable object, fully solid. Every structure
+   below turned out to be a clean contiguous rectangle in the sheet, so no
+   per-cell shape list was needed — just an origin + size.
+3. **Added floor variety**: a handful of plain/cracked floor tile variants
+   picked per-cell at build time instead of one tile repeated everywhere.
+
+### Wasteland ("The Yard") — now has actual cars and cover
+
+- **4 vehicles** (red truck, blue truck, maroon car, black car), each a
+  real 4x2-tile vehicle sprite, placed as large cover objects — directly
+  answers "add the cars."
+- **A crate stack** (2x2) and **a gas pump** (2x1) as smaller named cover.
+- Small loose scatter (barrels, a tire, a wood crate) still fills in
+  around them, at roughly half the density of Phase 6's version now that
+  the named structures carry more of the visual weight.
+- Wall ring uses the dark vertical-slat metal wall tile (corrected from
+  the wood-crate mistake).
+
+### Interior ("Ashyard") — now reads as an actual furnished space
+
+- **6 furniture clusters**: two wardrobe/cabinet blocks, a 3-wide row of
+  vending machines (a "break room"), a pool table, a pair of beds, and a
+  desk cluster — real recognizable rooms/furniture instead of one lone
+  cabinet tile repeated at scattered points.
+- Wall ring uses a plain grey server-rack-panel slice — this sheet has
+  **no dedicated wall/brick art at all** (confirmed again this pass, same
+  conclusion as Phase 4), so a neutral furniture-adjacent tile stands in;
+  deliberately a *different* tile than any of the furniture clusters, so
+  the border doesn't read as "part of" a nearby wardrobe.
+
+### Scope / what's still a guess
+
+- **Vehicles are treated as a uniform 4x2 rectangle** for simplicity, even
+  though the source art's cab silhouette leaves one corner transparent on
+  some of them — this just reads as a small gap in the roof corner, not a
+  functional bug (transparent, not invisible-but-solid). Worth a glance in
+  Xcode.
+- **Structure placements are fixed fractional positions**, chosen to
+  clear the 8 fixed spawn points and each other by eye, same as Phase 4/6's
+  scatter positions — still not pixel-verified in a running build.
+- **No pathfinding around structures** — same Phase 6 scope note applies:
+  player/zombies slide along a structure's edge rather than routing around
+  it.
+
 ## Balance as implemented (Phase 1, unchanged)
 
 - Zombie health: 150 base, +100 per round through round 9 (round 9 = 950),
