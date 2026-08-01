@@ -71,7 +71,7 @@ enum Balance {
     // MARK: - Coins
 
     static let coinBaseValue: Int = 25
-    static let coinPerRound: Int = 10000000000
+    static let coinPerRound: Int = 5
     static let coinMagnetRadius: CGFloat = 60
     static let coinCollectRadius: CGFloat = 26
     static let coinMagnetSpeed: CGFloat = 260
