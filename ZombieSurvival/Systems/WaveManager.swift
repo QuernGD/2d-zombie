@@ -87,11 +87,22 @@ final class WaveManager {
         return nil
     }
 
+    /// Difficulty scales the *size* of the wave, not just how tough each
+    /// zombie is. Scaling health/damage alone made Easy "the same horde,
+    /// fewer bullets each" — which is why it still felt hard.
     func startNextRound() {
         guard !isRoundActive else { return }
         currentRound += 1
-        pendingSpawnCount = Balance.enemyCount(forRound: currentRound)
+        let scaled = CGFloat(Balance.enemyCount(forRound: currentRound)) * difficulty.spawnCountMultiplier
+        // Always at least one zombie, however forgiving the difficulty.
+        pendingSpawnCount = max(1, Int(scaled.rounded()))
         isRoundActive = true
+    }
+
+    /// Gap between spawns for the current difficulty. >1 multiplier = a
+    /// longer gap = a calmer trickle.
+    private var effectiveSpawnInterval: TimeInterval {
+        Balance.spawnInterval * TimeInterval(difficulty.spawnIntervalMultiplier)
     }
 
     /// Load-time restoration only. Sets currentRound so that the *next*
@@ -114,7 +125,7 @@ final class WaveManager {
             return
         }
         guard aliveEnemies.count < Balance.maxConcurrentEnemies else { return }
-        guard currentTime - lastSpawnTime >= Balance.spawnInterval else { return }
+        guard currentTime - lastSpawnTime >= effectiveSpawnInterval else { return }
         spawnOne(currentTime: currentTime)
     }
 

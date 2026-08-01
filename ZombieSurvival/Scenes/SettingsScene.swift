@@ -78,17 +78,27 @@ final class SettingsScene: SKScene {
         leftY = drawToggleRow(label: "Mute", isOn: store.isMuted, name: "toggleMute", x: leftX, y: leftY)
         leftY -= 12
 
+        // First person has a single control scheme (move stick + drag to
+        // look), so the old scheme picker is gone; what matters now is how
+        // fast dragging turns you.
         leftY = drawSectionHeader("CONTROLS", x: leftX, y: leftY)
-        leftY = drawOptionRow(
-            options: ControlSchemeType.allCases,
-            current: store.controlSchemeType,
-            namePrefix: "controlScheme",
-            rawValue: { $0.rawValue },
-            display: { $0 == .dualStick ? "Dual Stick" : "Single Stick + Auto-Aim" },
-            x: leftX, y: leftY, buttonWidth: 150
+        leftY = drawSteppedControl(
+            label: "Look Sensitivity",
+            valueName: "lookSensitivity",
+            currentValue: normalisedLookSensitivity,
+            x: leftX, y: leftY
         )
 
         rightY = drawSectionHeader("GRAPHICS", x: rightX, y: rightY)
+        // Raycaster column count — the main frame-time dial.
+        rightY = drawOptionRow(
+            options: RenderQuality.allCases,
+            current: store.renderQuality,
+            namePrefix: "renderQuality",
+            rawValue: { $0.rawValue },
+            display: { $0.displayName },
+            x: rightX, y: rightY, buttonWidth: 65, label: "Resolution"
+        )
         rightY = drawOptionRow(
             options: ParticleDensity.allCases,
             current: store.particleDensity,
@@ -114,6 +124,14 @@ final class SettingsScene: SKScene {
         drawDifficultyRow(x: rightX, y: rightY)
 
         drawBackButton()
+    }
+
+    /// The stepped control draws 0...1, so map the sensitivity multiplier
+    /// into that range for display.
+    private var normalisedLookSensitivity: Float {
+        let span = RaycasterConfig.maximumLookSensitivity - RaycasterConfig.minimumLookSensitivity
+        guard span > 0 else { return 1 }
+        return (store.lookSensitivity - RaycasterConfig.minimumLookSensitivity) / span
     }
 
     private func drawDifficultyRow(x: CGFloat, y: CGFloat) {
@@ -260,9 +278,16 @@ final class SettingsScene: SKScene {
             guard parts.count > 1, let rawInt = Int(parts[1]), let cap = FrameCap(rawValue: rawInt) else { return }
             store.frameCap = cap
             rebuild()
-        case "controlScheme":
-            guard parts.count > 1, let scheme = ControlSchemeType(rawValue: parts[1]) else { return }
-            store.controlSchemeType = scheme
+        case "lookSensitivity":
+            guard parts.count > 1, let level = Int(parts[1]) else { return }
+            let fraction = Float(level) / Float(Balance.volumeSliderSteps)
+            store.lookSensitivity = RaycasterConfig.minimumLookSensitivity
+                + (RaycasterConfig.maximumLookSensitivity - RaycasterConfig.minimumLookSensitivity) * fraction
+            midRunGameScene?.refreshControlSchemeIfNeeded()
+            rebuild()
+        case "renderQuality":
+            guard parts.count > 1, let quality = RenderQuality(rawValue: parts[1]) else { return }
+            store.renderQuality = quality
             midRunGameScene?.refreshControlSchemeIfNeeded()
             rebuild()
         case "difficulty":

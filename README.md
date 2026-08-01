@@ -1,5 +1,25 @@
 # 2D Zombie Survival (iOS)
 
+> ## ⚠️ Branch: `fps-raycaster`
+>
+> This branch converts the game from top-down 2D to a **first-person
+> raycaster** (Wolfenstein 3D style). `main` is untouched.
+>
+> This is **ray casting, not ray tracing** — no reflections, no light
+> bounces, no Metal. It's fake 3D projected from the same 2D grid the
+> top-down build used, with enemies drawn as camera-facing sprite
+> billboards. That's the right fit here precisely *because* all the art is
+> 2D pixel art: the zombies become billboards exactly the way Doom's
+> monsters were.
+>
+> Everything above the renderer carried over unedited: WaveManager,
+> EconomyManager, SaveManager/SaveSlot, SettingsStore, AudioManager,
+> GameState, Balance, Perk, WeaponInventory, every weapon class and its
+> stats, AssetProvider, and all of MainMenu/MapSelect/LoadGame/Pause/Shop.
+> Rounds, coins, the shop, perks, saves and difficulty all behave
+> identically. See the **First-person conversion** section below for the
+> full write-up, the performance dial, and what's stubbed.
+
 A top-down, twin-stick zombie survival shooter built with SpriteKit for
 iOS 17+. Phase 1 was the core loop (move/aim/shoot/survive rounds/die).
 Phase 2 added the economy: coins, a round-end shop, 8 weapons, overclocking,
@@ -709,6 +729,231 @@ Still unverified in a running build (no Xcode here). Most suspect:
   it may not tile seamlessly top-to-bottom along the border.
 - Floor variants for both maps are the safest picks (plain ground only,
   with the road strip and baseboard trim deliberately excluded).
+
+## First-person conversion (`fps-raycaster` branch)
+
+| File | Responsibility |
+|---|---|
+| `Config/RaycasterConfig.swift` | **New.** All presentation tuning (cell size, FOV, shading, look sensitivity range, viewmodel size) + the `RenderQuality` enum. Deliberately *not* in Balance.swift — Balance owns gameplay numbers, which carried over untouched. |
+| `Systems/MapModel.swift` | **New.** Turns the same ASCII layout into world geometry, solid rects, spawn points and a NavGrid, and says which tile art textures each wall. Also runs the connectivity flood-fill that used to live in TileMapBuilder. |
+| `Raycaster/WallTextureCache.swift` | **New.** Pre-slices each wall tile into 32 vertical 1px strips once at load. |
+| `Raycaster/RaycastRenderer.swift` | **New.** CPU DDA raycast, pooled column sprites, depth buffer, distance/side shading, flat floor+ceiling planes. |
+| `Raycaster/BillboardRenderer.swift` | **New.** Projects world sprites to screen, sorts far-to-near, slices each into vertical strips and depth-tests every strip against the wall depth buffer. |
+| `Raycaster/WeaponViewModel.swift` | **New.** Bottom-of-screen gun — **placeholder art, see the warning below.** |
+| `Controls/FPSControls.swift` | **New.** Move stick + drag-to-look + fire/reload/swap. Replaces both old schemes. |
+| `Systems/HitscanResolver.swift` | **New.** Ray-vs-enemy-circle, clipped by the first wall along the ray. |
+| `Scenes/GameScene.swift` | Rewritten, but keeps the exact public API (`player`, `economyManager`, `gameState`, `configureNewRun`, `configureRestoring`, `refreshControlSchemeIfNeeded`) that Shop/Pause/Settings/MapSelect/LoadGame call — which is why none of those needed editing. |
+| `Entities/Player.swift` | Now a camera (position + facing angle) plus the unchanged inventory/perk/health API ShopScene talks to. No longer an SKNode — the player is never drawn. |
+| `Entities/Walker.swift` | Same states, same flow-field pathfinding. Animation is now advanced manually per frame instead of by SKActions (the node is never in the scene graph; the renderer just asks for `currentTexture`), and textures are cached per variant instead of re-decoded on every spawn. |
+| `Entities/Bullet.swift`, `CoinPickup.swift` | Plain world-space entities drawn as billboards. |
+
+Deleted: `DualStickControlScheme`, `SingleStickAutoAimControlScheme`,
+`TileMapBuilder`. `ControlScheme.swift` is reduced to just the
+`ControlSchemeType` enum, kept only because GameState and SettingsStore
+persist it — removing it would break existing saves for no benefit.
+`NavGrid.swift` and `MapLayouts.swift` are **functionally unchanged**
+(comment-only edits).
+
+### The renderer
+
+Standard DDA in grid space, where a cell is exactly 1 unit so stepping is
+two additions and no division. Per column: cast, take the **perpendicular**
+wall distance (this *is* the fisheye correction — algebraically identical to
+multiplying euclidean distance by `cos(rayAngle - playerAngle)`, minus the
+per-column trig), compute `height = screenHeight / distance`, and assign a
+cached 1px texture strip to a pooled sprite.
+
+Nothing is allocated per frame: column nodes are pooled and rebuilt only
+when the resolution setting changes, texture strips are `SKTexture(rect:in:)`
+references made once at load (no pixel copying), and the DDA writes into
+preallocated scratch arrays.
+
+Shading is `colorBlendFactor` toward black, ramped with distance, plus a
+flat extra darkening on north/south wall faces so corners stay readable
+without any lighting. Floor and ceiling are two flat colour planes —
+textured floorcasting is per-pixel work that a SpriteKit node-per-column
+approach can't do cheaply, so it's deliberately skipped.
+
+### Column count
+
+`RenderQuality` in **Settings → Graphics → Resolution**:
+
+| Setting | Columns | Billboard slices |
+|---|---|---|
+| Low | 160 | 6 |
+| Medium (default) | 240 | 10 |
+| High | 320 | 14 |
+
+Clamped so a column is never narrower than one point. **Frame time is not
+measured here** — this environment has no Xcode, simulator or device, so no
+number in this repo is a real measurement. A DEBUG-only on-screen readout
+(ms / fps / column count / node count) is wired into GameScene so the dial
+can be tuned against a real reading on device.
+
+### Billboard depth clipping
+
+A single SKSpriteNode can't be partially occluded, so each billboard is cut
+into vertical slices (6–14 by quality) and **every slice is depth-tested
+against the wall depth buffer column it lands on**. A zombie half behind a
+corner loses exactly the slices the wall covers. The logic is written and
+reviewed but **not visually confirmed** — see "what still needs verifying".
+
+### Hitscan vs projectiles
+
+Split on each weapon's existing `bulletBehavior`, so no weapon stats changed:
+
+- **`.standard` → hitscan.** Pistol, SMG, assault rifle, sniper, LMG. An
+  enemy only counts if it's nearer than the first wall along the ray.
+- **Shotgun** is the same path with `pelletCount` 8 — eight hitscans with
+  the weapon's existing `spreadAngle`, damage split per pellet exactly as
+  before.
+- **`.aoe` / `.chain` → real projectiles.** Grenade launcher and Arc Cannon
+  still travel through the world, because their travel time *is* the
+  mechanic. They now also stop on walls.
+
+### ⚠️ Weapon viewmodel is placeholder art, and it will look wrong
+
+The pack's weapon sheets (`Pistol_Shoot`, `Rifle_Shoot`, …) are small
+top-down/side-on **pickup** sprites, not first-person hand-and-gun
+viewmodels. Pinned to the bottom of the screen they read as a floating
+side-view gun, not a weapon the player is holding. It's wired up anyway so
+firing has visual feedback and the plumbing is ready, but this is a genuine
+art mismatch, not something that just needs positioning tweaks — it needs
+purpose-drawn FPS viewmodel art.
+
+### Controls
+
+Left half: floating stick, Y = forward/back, X = strafe, both relative to
+facing. Right half: drag to turn. **No vertical look** — a raycaster has no
+true pitch, and the screen-offset fake looks bad enough that skipping it was
+the better call (the plumbing for a horizon offset exists in
+`RaycastCamera.pitchOffset` if you want to try). Fire (hold to keep firing),
+reload and swap buttons sit bottom-right. Look sensitivity is a slider in
+**Settings → Controls**.
+
+### What's stubbed or deliberately skipped
+
+- **Textured floors/ceilings** — flat colours only (see above).
+- **No vertical look** (see above).
+- **Impact/explosion effects aren't drawn.** The effects sheets are loaded
+  for the projectile billboard but hitscan hits and AoE blasts have no
+  visual — the top-down build's ring/line flourishes were 2D-world nodes
+  and don't survive the conversion. Damage still applies correctly.
+- **Enemies have no directional sprites**, so billboards always face the
+  camera. That's how Doom-era games with a single view angle worked; faking
+  rotation from a front-facing sheet would look worse.
+- **No sprite-vs-sprite occlusion ordering beyond depth sort** — two
+  overlapping zombies sort by distance, which is correct, but neither is
+  clipped against the other.
+
+### What still needs verifying on a device
+
+None of the below could be checked here — no Apple toolchain in this
+environment, so this is careful review only, not a running build:
+
+1. **Frame time with 25 concurrent zombies**, and whether Medium (240
+   columns) holds 60fps on a mid-range device or needs to drop to Low.
+2. **Billboard depth clipping** actually looking right at wall edges —
+   the maths is right on paper but slice-vs-column alignment is exactly
+   the kind of thing that's off by one in practice.
+3. **Wall texture orientation** — whether the strip-mirroring on the two
+   "back" faces makes texture detail read correctly as you walk around a
+   block, or looks flipped.
+4. **Whether `interiorWallTile` reads as a wall at all** in first person.
+   It's a server-rack panel standing in for a wall (this sheet has no wall
+   art) and it was already the weakest tile pick in the top-down build —
+   at full screen height it may look obviously wrong.
+
+## Power-up / pickups pass (`fps-raycaster`)
+
+### Difficulty actually changes the fight now
+
+The root cause of "Easy still feels hard": `difficultyEasyMultiplier` only
+scaled zombie **health and contact damage**. Same horde, same pace, just
+fewer bullets each. Two new multipliers fix the actual pressure, applied in
+`WaveManager` (wave size in `startNextRound`, cadence via
+`effectiveSpawnInterval`) rather than on the Walker:
+
+| | health/damage | spawn count | spawn interval | R1 | R5 | R10 | gap |
+|---|---|---|---|---|---|---|---|
+| Easy | 0.75x | **0.70x** | **1.30x** (slower) | 4 | 13 | 23 | 0.78s |
+| Medium | 1.00x | 1.00x | 1.00x | 6 | 18 | 33 | 0.60s |
+| Hard | 1.35x | **1.25x** | **0.80x** (faster) | 8 | 22 | 41 | 0.48s |
+
+### Player baseline + weapon rebalance
+
+Max health 100 -> **150**, move speed 220 -> **250**, pistol damage
+34 -> **42**. Every other weapon scaled **x1.2**; fire rates, magazines and
+ranges untouched, so DPS ordering is preserved exactly.
+
+| Weapon | Damage | DPS before | DPS after |
+|---|---|---|---|
+| Pistol | 34 -> **42** (+23.5%) | 154.5 | 190.9 |
+| SMG | 16 -> **19.2** | 177.8 | 213.3 |
+| Shotgun | 140 -> **168** | 186.7 | 224.0 |
+| Assault Rifle | 30 -> **36** | 250.0 | 300.0 |
+| Sniper | 220 -> **264** | 244.4 | 293.3 |
+| LMG | 26 -> **31.2** | 325.0 | 390.0 |
+| Grenade Launcher | 180 -> **216** | 163.6 | 196.4 |
+| Arc Cannon | 60 -> **72** | 120.0 | 144.0 |
+
+### Coins
+
+Base 25 -> **34**, per-round 5 -> **7** (both +35%). New flat **wave-clear
+bonus** of `50 + 15 x (round-1)`, paid the moment the last zombie dies —
+about a quarter of round-1 income, fading to a rounding error later so it
+never becomes the main earner.
+
+### World pickups
+
+Physical items spawned on walkable floor tiles (via `MapModel`/the layout
+grid, never inside geometry), collected by walking over them, drawn as
+billboards like everything else. Icons are existing Items_Sprites_16x16 art.
+
+| Pickup | Icon | Effect |
+|---|---|---|
+| Medkit | medkit | Heals 40% of **current** max health, so it scales with Vitality |
+| Double Damage | grenades | All weapon damage x2 for 15s |
+| Speed Boost | battery | Move speed x1.6 for 12s |
+| Nuke | skull | Kills every living zombie; each still drops its normal coins |
+
+- **The medkit is guaranteed once per round**, scheduled 8-18s in rather
+  than sitting on the floor from second zero — there is otherwise no way to
+  heal mid-round at all.
+- Non-medkit pickups roll every 20-30s while zombies are alive, weighted
+  46/46/8 — at roughly three rolls per round that lands **about one nuke
+  every four rounds**.
+- Pickups despawn after 20s, blinking for the last 5s as a warning.
+- Double Damage is applied at fire time in `GameScene`, not on the Weapon,
+  so the weapon classes and their stats stay untouched.
+
+### Polish-pass verification
+
+All five checked by running them, not by inspection alone:
+
+1. **Billboard depth clipping — PASS.** Re-ran the projection + DDA maths as
+   it stands now: 467 genuine partial-occlusion configurations found (a
+   zombie at a wall edge losing 3/10, 5/10, 8/10 slices), fully-visible /
+   fully-hidden / behind-camera cases all correct, and a 3,294-projection
+   sweep found **zero** cases of a sprite drawing through a wall.
+2. **Pause — PASS.** Every gameplay timer runs off `gameClock`; no
+   wall-clock API appears anywhere in the gameplay path. The `isPaused`
+   guard runs *before* `gameClock` advances and `lastUpdateTime` is updated
+   *before* the guard, so the paused span is never folded into the next
+   delta. Buffs store an absolute gameClock deadline, not a countdown.
+3. **Difficulty — PASS.** Captured once at configure time, `WaveManager
+   .difficulty` written exactly once, no mid-run write path, read-only in
+   Settings mid-run — and it now visibly changes wave size and cadence
+   (table above).
+4. **Save/load — PASS.** Buffs are absent from `GameState` entirely *and*
+   explicitly cleared on load. Coins/weapons/overclock tiers round-trip.
+   Weapon damage isn't persisted at all (only type + tier), so old saves
+   automatically pick up the rebalanced numbers. `restoreHealth` clamps to
+   the new max, so a pre-buff save loads at 100/150 rather than overflowing.
+5. **HUD — PASS after a fix.** The check found a real collision, though not
+   from the new buff pills: the DEBUG frame-time label was overlapping the
+   perk icon row. Moved it to the bottom-left. Re-run gives **0 overlaps**
+   across all 13 HUD elements on iPhone SE / 13 mini / 15 / 15 Pro Max.
 
 ## Balance as implemented (Phase 1, unchanged)
 

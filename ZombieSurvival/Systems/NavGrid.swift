@@ -77,8 +77,8 @@ final class NavGrid {
 
     /// Flood-fills the walkable space and reports whether every walkable
     /// cell was reached. A false result means some part of the map is
-    /// sealed off — zombies could never path there, so TileMapBuilder logs
-    /// it loudly at build time rather than letting it ship silently.
+    /// sealed off — zombies could never path there, so MapModel logs it
+    /// loudly at map load rather than letting it ship silently.
     func isFullyConnected() -> Bool {
         guard let start = walkable.firstIndex(of: true) else { return true }
         var visited = [Bool](repeating: false, count: walkable.count)
