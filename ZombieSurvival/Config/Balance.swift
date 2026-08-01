@@ -8,13 +8,13 @@ enum Balance {
 
     // MARK: - Player
 
-    static let playerMaxHealth: CGFloat = 100
-    static let playerMoveSpeed: CGFloat = 220 // points per second
+    static let playerMaxHealth: CGFloat = 150
+    static let playerMoveSpeed: CGFloat = 250 // points per second
     static let playerRadius: CGFloat = 20
 
     // MARK: - Pistol (starting weapon)
 
-    static let pistolDamage: CGFloat = 34
+    static let pistolDamage: CGFloat = 42
     static let pistolMagazineSize: Int = 12
     static let pistolFireRate: TimeInterval = 0.22 // seconds between shots
     static let pistolReloadTime: TimeInterval = 1.4
@@ -70,16 +70,28 @@ enum Balance {
 
     // MARK: - Coins
 
-    static let coinBaseValue: Int = 25
-    static let coinPerRound: Int = 5
+    // +35% pass on both the base value and the per-round scaling.
+    static let coinBaseValue: Int = 34   // was 25
+    static let coinPerRound: Int = 7     // was 5
     static let coinMagnetRadius: CGFloat = 60
     static let coinCollectRadius: CGFloat = 26
     static let coinMagnetSpeed: CGFloat = 260
     static let coinRoundEndFlyDuration: TimeInterval = 0.35
 
-    /// 25 base, +5 per round.
+    /// 34 base, +7 per round.
     static func coinValue(forRound round: Int) -> Int {
         coinBaseValue + coinPerRound * max(0, round - 1)
+    }
+
+    /// Flat bonus paid the moment a round's last zombie dies, on top of the
+    /// per-kill coins. Deliberately gentle scaling: it's a meaningful
+    /// cushion in the early rounds (~25% of round-1 income) and fades to a
+    /// rounding error later, so it never becomes the main income source.
+    static let waveClearBonusBase: Int = 50
+    static let waveClearBonusPerRound: Int = 15
+
+    static func waveClearBonus(forRound round: Int) -> Int {
+        waveClearBonusBase + waveClearBonusPerRound * max(0, round - 1)
     }
 
     // MARK: - Weapon costs (Pistol is free/starting, defined on WeaponType.pistol)
@@ -95,16 +107,21 @@ enum Balance {
     // MARK: - Weapon stats
     // baseDamage is the "per shot" potential; pellet weapons split it across
     // pelletCount so a full-connect blast totals roughly baseDamage.
-    // All placeholder numbers — tune freely, nothing else depends on these values.
+    //
+    // Every weapon below was scaled x1.2 in the power-up pass (the pistol
+    // went 34 -> 42, a slightly larger +23.5%, because it's the free
+    // starting weapon). Fire rates, magazines and ranges are untouched, so
+    // the DPS ordering between weapons is preserved exactly — the tiers
+    // don't collapse into each other.
 
-    static let smgDamage: CGFloat = 16
+    static let smgDamage: CGFloat = 19.2
     static let smgMagazineSize = 30
     static let smgFireRate: TimeInterval = 0.09
     static let smgReloadTime: TimeInterval = 1.6
     static let smgBulletSpeed: CGFloat = 950
     static let smgRange: CGFloat = 650
 
-    static let shotgunDamage: CGFloat = 140
+    static let shotgunDamage: CGFloat = 168
     static let shotgunPelletCount = 8
     static let shotgunSpreadAngle: CGFloat = .pi / 7 // ~25.7 degrees, full cone
     static let shotgunMagazineSize = 6
@@ -113,28 +130,28 @@ enum Balance {
     static let shotgunBulletSpeed: CGFloat = 850
     static let shotgunRange: CGFloat = 350
 
-    static let assaultRifleDamage: CGFloat = 30
+    static let assaultRifleDamage: CGFloat = 36
     static let assaultRifleMagazineSize = 25
     static let assaultRifleFireRate: TimeInterval = 0.12
     static let assaultRifleReloadTime: TimeInterval = 1.8
     static let assaultRifleBulletSpeed: CGFloat = 1000
     static let assaultRifleRange: CGFloat = 750
 
-    static let sniperDamage: CGFloat = 220
+    static let sniperDamage: CGFloat = 264
     static let sniperMagazineSize = 5
     static let sniperFireRate: TimeInterval = 0.9
     static let sniperReloadTime: TimeInterval = 2.2
     static let sniperBulletSpeed: CGFloat = 1400
     static let sniperRange: CGFloat = 1200
 
-    static let lmgDamage: CGFloat = 26
+    static let lmgDamage: CGFloat = 31.2
     static let lmgMagazineSize = 60
     static let lmgFireRate: TimeInterval = 0.08
     static let lmgReloadTime: TimeInterval = 3.2
     static let lmgBulletSpeed: CGFloat = 950
     static let lmgRange: CGFloat = 700
 
-    static let grenadeLauncherDamage: CGFloat = 180
+    static let grenadeLauncherDamage: CGFloat = 216
     static let grenadeLauncherAoeRadius: CGFloat = 90
     static let grenadeLauncherMagazineSize = 4
     static let grenadeLauncherFireRate: TimeInterval = 1.1
@@ -142,7 +159,7 @@ enum Balance {
     static let grenadeLauncherBulletSpeed: CGFloat = 600
     static let grenadeLauncherRange: CGFloat = 500
 
-    static let arcCannonDamage: CGFloat = 60
+    static let arcCannonDamage: CGFloat = 72
     static let arcCannonChainMaxJumps = 4
     static let arcCannonChainRange: CGFloat = 150
     static let arcCannonChainFalloff: CGFloat = 0.65
@@ -183,11 +200,58 @@ enum Balance {
     static let zombieAttackFrameTime: TimeInterval = 0.06
     static let zombieDeathEffectDuration: TimeInterval = 0.25
 
-    // MARK: - Difficulty (global multiplier on zombie health + contact damage)
+    // MARK: - Difficulty
 
+    /// Multiplier on zombie health and contact damage.
     static let difficultyEasyMultiplier: CGFloat = 0.75
     static let difficultyMediumMultiplier: CGFloat = 1.0
     static let difficultyHardMultiplier: CGFloat = 1.35
+
+    /// Multiplier on how many zombies a round queues up. Health/damage
+    /// scaling alone made Easy "same horde, fewer bullets each" rather than
+    /// actually easier — this is what changes the pressure.
+    static let difficultyEasySpawnCountMultiplier: CGFloat = 0.7
+    static let difficultyMediumSpawnCountMultiplier: CGFloat = 1.0
+    static let difficultyHardSpawnCountMultiplier: CGFloat = 1.25
+
+    /// Multiplier on the gap *between* spawns, so >1 is slower. Easy gets a
+    /// longer gap (calmer trickle), Hard a shorter one (faster pressure).
+    static let difficultyEasySpawnIntervalMultiplier: CGFloat = 1.3
+    static let difficultyMediumSpawnIntervalMultiplier: CGFloat = 1.0
+    static let difficultyHardSpawnIntervalMultiplier: CGFloat = 0.8
+
+    // MARK: - World pickups
+
+    /// Heals a fraction of *current max* health, so it scales with Vitality
+    /// rather than being a flat number that gets worse as you power up.
+    static let medkitHealFraction: CGFloat = 0.4
+    static let doubleDamageMultiplier: CGFloat = 2.0
+    static let doubleDamageDuration: TimeInterval = 15
+    static let speedBoostMultiplier: CGFloat = 1.6
+    static let speedBoostDuration: TimeInterval = 12
+
+    /// How long a dropped pickup survives uncollected, and how much of that
+    /// tail is spent blinking as a "about to vanish" warning.
+    static let pickupLifetime: TimeInterval = 20
+    static let pickupFadeWarning: TimeInterval = 5
+    static let pickupCollectRadius: CGFloat = 36
+
+    /// One medkit is guaranteed per round — there is otherwise no way to
+    /// heal mid-round at all — but it arrives partway in rather than
+    /// sitting on the floor from the opening second.
+    static let medkitSpawnDelayMin: TimeInterval = 8
+    static let medkitSpawnDelayMax: TimeInterval = 18
+
+    /// Non-medkit pickups roll on this cadence while zombies are alive.
+    static let pickupRollIntervalMin: TimeInterval = 20
+    static let pickupRollIntervalMax: TimeInterval = 30
+
+    /// Relative weights for what a non-medkit roll produces. Nuke is rare
+    /// but not vanishing: at roughly 3 rolls in an average round, an 8/100
+    /// weight lands about one nuke every 4 rounds.
+    static let pickupWeightDoubleDamage: Int = 46
+    static let pickupWeightSpeedBoost: Int = 46
+    static let pickupWeightNuke: Int = 8
 
     // MARK: - Settings UI
 

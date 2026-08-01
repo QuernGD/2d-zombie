@@ -864,6 +864,97 @@ environment, so this is careful review only, not a running build:
    art) and it was already the weakest tile pick in the top-down build —
    at full screen height it may look obviously wrong.
 
+## Power-up / pickups pass (`fps-raycaster`)
+
+### Difficulty actually changes the fight now
+
+The root cause of "Easy still feels hard": `difficultyEasyMultiplier` only
+scaled zombie **health and contact damage**. Same horde, same pace, just
+fewer bullets each. Two new multipliers fix the actual pressure, applied in
+`WaveManager` (wave size in `startNextRound`, cadence via
+`effectiveSpawnInterval`) rather than on the Walker:
+
+| | health/damage | spawn count | spawn interval | R1 | R5 | R10 | gap |
+|---|---|---|---|---|---|---|---|
+| Easy | 0.75x | **0.70x** | **1.30x** (slower) | 4 | 13 | 23 | 0.78s |
+| Medium | 1.00x | 1.00x | 1.00x | 6 | 18 | 33 | 0.60s |
+| Hard | 1.35x | **1.25x** | **0.80x** (faster) | 8 | 22 | 41 | 0.48s |
+
+### Player baseline + weapon rebalance
+
+Max health 100 -> **150**, move speed 220 -> **250**, pistol damage
+34 -> **42**. Every other weapon scaled **x1.2**; fire rates, magazines and
+ranges untouched, so DPS ordering is preserved exactly.
+
+| Weapon | Damage | DPS before | DPS after |
+|---|---|---|---|
+| Pistol | 34 -> **42** (+23.5%) | 154.5 | 190.9 |
+| SMG | 16 -> **19.2** | 177.8 | 213.3 |
+| Shotgun | 140 -> **168** | 186.7 | 224.0 |
+| Assault Rifle | 30 -> **36** | 250.0 | 300.0 |
+| Sniper | 220 -> **264** | 244.4 | 293.3 |
+| LMG | 26 -> **31.2** | 325.0 | 390.0 |
+| Grenade Launcher | 180 -> **216** | 163.6 | 196.4 |
+| Arc Cannon | 60 -> **72** | 120.0 | 144.0 |
+
+### Coins
+
+Base 25 -> **34**, per-round 5 -> **7** (both +35%). New flat **wave-clear
+bonus** of `50 + 15 x (round-1)`, paid the moment the last zombie dies —
+about a quarter of round-1 income, fading to a rounding error later so it
+never becomes the main earner.
+
+### World pickups
+
+Physical items spawned on walkable floor tiles (via `MapModel`/the layout
+grid, never inside geometry), collected by walking over them, drawn as
+billboards like everything else. Icons are existing Items_Sprites_16x16 art.
+
+| Pickup | Icon | Effect |
+|---|---|---|
+| Medkit | medkit | Heals 40% of **current** max health, so it scales with Vitality |
+| Double Damage | grenades | All weapon damage x2 for 15s |
+| Speed Boost | battery | Move speed x1.6 for 12s |
+| Nuke | skull | Kills every living zombie; each still drops its normal coins |
+
+- **The medkit is guaranteed once per round**, scheduled 8-18s in rather
+  than sitting on the floor from second zero — there is otherwise no way to
+  heal mid-round at all.
+- Non-medkit pickups roll every 20-30s while zombies are alive, weighted
+  46/46/8 — at roughly three rolls per round that lands **about one nuke
+  every four rounds**.
+- Pickups despawn after 20s, blinking for the last 5s as a warning.
+- Double Damage is applied at fire time in `GameScene`, not on the Weapon,
+  so the weapon classes and their stats stay untouched.
+
+### Polish-pass verification
+
+All five checked by running them, not by inspection alone:
+
+1. **Billboard depth clipping — PASS.** Re-ran the projection + DDA maths as
+   it stands now: 467 genuine partial-occlusion configurations found (a
+   zombie at a wall edge losing 3/10, 5/10, 8/10 slices), fully-visible /
+   fully-hidden / behind-camera cases all correct, and a 3,294-projection
+   sweep found **zero** cases of a sprite drawing through a wall.
+2. **Pause — PASS.** Every gameplay timer runs off `gameClock`; no
+   wall-clock API appears anywhere in the gameplay path. The `isPaused`
+   guard runs *before* `gameClock` advances and `lastUpdateTime` is updated
+   *before* the guard, so the paused span is never folded into the next
+   delta. Buffs store an absolute gameClock deadline, not a countdown.
+3. **Difficulty — PASS.** Captured once at configure time, `WaveManager
+   .difficulty` written exactly once, no mid-run write path, read-only in
+   Settings mid-run — and it now visibly changes wave size and cadence
+   (table above).
+4. **Save/load — PASS.** Buffs are absent from `GameState` entirely *and*
+   explicitly cleared on load. Coins/weapons/overclock tiers round-trip.
+   Weapon damage isn't persisted at all (only type + tier), so old saves
+   automatically pick up the rebalanced numbers. `restoreHealth` clamps to
+   the new max, so a pre-buff save loads at 100/150 rather than overflowing.
+5. **HUD — PASS after a fix.** The check found a real collision, though not
+   from the new buff pills: the DEBUG frame-time label was overlapping the
+   perk icon row. Moved it to the bottom-left. Re-run gives **0 overlaps**
+   across all 13 HUD elements on iPhone SE / 13 mini / 15 / 15 Pro Max.
+
 ## Balance as implemented (Phase 1, unchanged)
 
 - Zombie health: 150 base, +100 per round through round 9 (round 9 = 950),

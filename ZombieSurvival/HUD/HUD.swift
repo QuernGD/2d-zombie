@@ -13,6 +13,8 @@ struct HUDDisplayState {
     let coins: Int
     let perks: Set<Perk>
     let showSwapButton: Bool
+    /// Currently-running timed pickup buffs and their remaining seconds.
+    let activeBuffs: [(type: PickupType, remaining: TimeInterval)]
 }
 
 /// Displays health as a stretched color-swatch sprite (health_bar_fillers.png,
@@ -91,6 +93,7 @@ final class HUD: SKNode {
     private let ammoLabel: SKLabelNode
     private let reloadLabel: SKLabelNode
     private let perkIconsNode = SKNode()
+    private let buffIconsNode = SKNode()
 
     private var nextRoundButton: SKShapeNode?
     private var shopButton: SKShapeNode?
@@ -170,6 +173,12 @@ final class HUD: SKNode {
         perkIconsNode.position = CGPoint(x: -sceneSize.width / 2 + 24, y: sceneSize.height / 2 - topInset - 26)
         addChild(perkIconsNode)
 
+        // Buff pills sit below the perk row on the same left rail, so they
+        // extend downward into empty space rather than crowding the health
+        // bar or the centre round/coin column.
+        buffIconsNode.position = CGPoint(x: -sceneSize.width / 2 + 24, y: sceneSize.height / 2 - topInset - 56)
+        addChild(buffIconsNode)
+
         roundLabel.position = CGPoint(x: 0, y: sceneSize.height / 2 - topInset)
         addChild(roundLabel)
 
@@ -205,6 +214,8 @@ final class HUD: SKNode {
             rebuildPerkIcons(state.perks)
         }
 
+        rebuildBuffIcons(state.activeBuffs)
+
         if state.showSwapButton {
             showSwapButton()
         } else {
@@ -231,6 +242,31 @@ final class HUD: SKNode {
             icon.addChild(label)
 
             perkIconsNode.addChild(icon)
+        }
+    }
+
+    /// Rebuilt every frame because the countdown text changes constantly;
+    /// at most two pills exist so this is a handful of nodes, not a cost.
+    private func rebuildBuffIcons(_ buffs: [(type: PickupType, remaining: TimeInterval)]) {
+        buffIconsNode.removeAllChildren()
+        let pillWidth: CGFloat = 78
+        let pillHeight: CGFloat = 20
+        for (index, buff) in buffs.enumerated() {
+            let pill = SKShapeNode(rectOf: CGSize(width: pillWidth, height: pillHeight), cornerRadius: 5)
+            pill.fillColor = buff.type.hudColor.withAlphaComponent(0.85)
+            pill.strokeColor = .white
+            pill.lineWidth = 1
+            pill.position = CGPoint(x: pillWidth / 2, y: -CGFloat(index) * (pillHeight + 4) - pillHeight / 2)
+
+            let label = SKLabelNode(fontNamed: "Menlo-Bold")
+            label.text = "\(buff.type.hudLabel) \(Int(ceil(buff.remaining)))s"
+            label.fontSize = 11
+            label.fontColor = .white
+            label.horizontalAlignmentMode = .center
+            label.verticalAlignmentMode = .center
+            pill.addChild(label)
+
+            buffIconsNode.addChild(pill)
         }
     }
 

@@ -12,12 +12,18 @@ struct BillboardSprite {
     let heightScale: CGFloat
     /// Multiplied into the width only, for non-square source art.
     let widthScale: CGFloat
+    /// Used by pickups to blink as they approach despawn.
+    let alpha: CGFloat
 
-    init(worldPosition: CGPoint, texture: SKTexture, heightScale: CGFloat = 1.0, widthScale: CGFloat = 1.0) {
+    init(
+        worldPosition: CGPoint, texture: SKTexture,
+        heightScale: CGFloat = 1.0, widthScale: CGFloat = 1.0, alpha: CGFloat = 1.0
+    ) {
         self.worldPosition = worldPosition
         self.texture = texture
         self.heightScale = heightScale
         self.widthScale = widthScale
+        self.alpha = alpha
     }
 }
 
@@ -89,7 +95,7 @@ final class BillboardRenderer {
         // Project everything first so we can paint far-to-near; nearer
         // billboards then simply get a higher zPosition and overlap
         // correctly without any depth sorting per slice.
-        var projected: [(depth: CGFloat, centerX: CGFloat, height: CGFloat, width: CGFloat, texture: SKTexture)] = []
+        var projected: [(depth: CGFloat, centerX: CGFloat, height: CGFloat, width: CGFloat, texture: SKTexture, alpha: CGFloat)] = []
         projected.reserveCapacity(sprites.count)
 
         for sprite in sprites {
@@ -111,7 +117,7 @@ final class BillboardRenderer {
             guard centerX + width / 2 > -sceneSize.width / 2,
                   centerX - width / 2 < sceneSize.width / 2 else { continue }
 
-            projected.append((depth, centerX, height, width, sprite.texture))
+            projected.append((depth, centerX, height, width, sprite.texture, sprite.alpha))
         }
 
         projected.sort { $0.depth > $1.depth }
@@ -139,6 +145,7 @@ final class BillboardRenderer {
                 node.texture = sliceTexture(of: item.texture, index: slice)
                 node.size = CGSize(width: sliceWidth + 0.5, height: item.height)
                 node.position = CGPoint(x: sliceCenterX, y: centerY)
+                node.alpha = item.alpha
                 node.zPosition = CGFloat(spriteIndex)
                 node.colorBlendFactor = min(
                     item.depth / RaycasterConfig.shadingFalloffDistance, 1

@@ -18,11 +18,30 @@ enum Difficulty: String, Codable, CaseIterable {
         }
     }
 
+    /// Multiplier on zombie health and contact damage.
     var multiplier: CGFloat {
         switch self {
         case .easy: return Balance.difficultyEasyMultiplier
         case .medium: return Balance.difficultyMediumMultiplier
         case .hard: return Balance.difficultyHardMultiplier
+        }
+    }
+
+    /// Multiplier on how many zombies a round queues.
+    var spawnCountMultiplier: CGFloat {
+        switch self {
+        case .easy: return Balance.difficultyEasySpawnCountMultiplier
+        case .medium: return Balance.difficultyMediumSpawnCountMultiplier
+        case .hard: return Balance.difficultyHardSpawnCountMultiplier
+        }
+    }
+
+    /// Multiplier on the gap between spawns — greater than 1 is *slower*.
+    var spawnIntervalMultiplier: CGFloat {
+        switch self {
+        case .easy: return Balance.difficultyEasySpawnIntervalMultiplier
+        case .medium: return Balance.difficultyMediumSpawnIntervalMultiplier
+        case .hard: return Balance.difficultyHardSpawnIntervalMultiplier
         }
     }
 }

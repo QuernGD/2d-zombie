@@ -27,9 +27,23 @@ final class Player {
         baseMaxHealth * (perks.contains(.vitality) ? Balance.vitalityMaxHealthMultiplier : 1)
     }
 
-    /// Base value boosted by the Sprinter perk.
+    /// Temporary Speed Boost pickup multiplier. Lives here rather than in
+    /// the perk set because it's transient — it is never persisted, and is
+    /// reset to 1 on every load/restart.
+    var speedBoostMultiplier: CGFloat = 1
+
+    /// Base value, boosted by the permanent Sprinter perk and by any active
+    /// Speed Boost pickup.
     var moveSpeed: CGFloat {
-        baseMoveSpeed * (perks.contains(.sprinter) ? Balance.sprinterMoveSpeedMultiplier : 1)
+        baseMoveSpeed
+            * (perks.contains(.sprinter) ? Balance.sprinterMoveSpeedMultiplier : 1)
+            * speedBoostMultiplier
+    }
+
+    /// Heals a fraction of *current* max health, so a medkit is worth more
+    /// once Vitality is bought rather than becoming a rounding error.
+    func heal(fraction: CGFloat) {
+        health = min(maxHealth, health + maxHealth * fraction)
     }
 
     init(maxHealth: CGFloat = Balance.playerMaxHealth, moveSpeed: CGFloat = Balance.playerMoveSpeed) {

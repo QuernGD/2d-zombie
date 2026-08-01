@@ -20,6 +20,8 @@ final class GameScene: SKScene {
     private var enemies: [Walker] = []
     private var bullets: [Bullet] = []
     private var coins: [CoinPickup] = []
+    private var pickups: [Pickup] = []
+    private let pickupDirector = PickupDirector()
 
     private var map: MapModel!
     private var wallTextures: WallTextureCache!
@@ -132,7 +134,11 @@ final class GameScene: SKScene {
         label.fontColor = .green
         label.horizontalAlignmentMode = .left
         label.verticalAlignmentMode = .top
-        label.position = CGPoint(x: -size.width / 2 + 12, y: size.height / 2 - 78)
+        // Bottom-left, not top-left: the top-left rail is now health bar ->
+        // perk icons -> buff pills, and this used to sit on top of the perk
+        // row. The move stick is a floating joystick with no resting node,
+        // so this corner is otherwise empty.
+        label.position = CGPoint(x: -size.width / 2 + 12, y: -size.height / 2 + 52)
         label.zPosition = 3000
         addChild(label)
         frameTimeLabel = label
@@ -165,6 +171,12 @@ final class GameScene: SKScene {
         player.inventory.setActiveIndex(state.activeSlot)
         player.inventory.refreshModifiers(perks: player.perks)
         player.restoreHealth(state.playerHealth)
+        // Temporary buffs are deliberately absent from GameState and are
+        // cleared explicitly here: loading a save always resumes with no
+        // Double Damage / Speed Boost running, whatever was active when it
+        // was written. Only perks, coins and weapons persist.
+        pickupDirector.clearBuffs()
+        player.speedBoostMultiplier = 1
         economyManager.setCoins(state.coins)
         waveManager.restoreRound(state.round)
         pendingDisplayRound = state.round
@@ -188,6 +200,7 @@ final class GameScene: SKScene {
         updateEnemies(deltaTime: deltaTime)
         updateBullets(deltaTime: deltaTime)
         updateCoins(deltaTime: deltaTime)
+        updatePickups(deltaTime: deltaTime)
         waveManager.update(currentTime: gameClock)
 
         renderFrame()
@@ -207,6 +220,11 @@ final class GameScene: SKScene {
     }
 
     private func updatePlayer(deltaTime: TimeInterval) {
+        // All buff bookkeeping runs off gameClock, which is frozen while
+        // paused — so a buff can never tick down inside the shop.
+        pickupDirector.expireBuffs(at: gameClock)
+        player.speedBoostMultiplier = pickupDirector.speedMultiplier
+
         player.turn(by: controls.consumeLookDelta())
         let movement = controls.movement
         player.move(forward: movement.dy, strafe: movement.dx, deltaTime: deltaTime, solidRects: map.solidRects)
@@ -230,7 +248,9 @@ final class GameScene: SKScene {
         switch weapon.bulletBehavior {
         case .standard:
             let pellets = max(1, weapon.pelletCount)
-            let damagePerPellet = weapon.damage / CGFloat(pellets)
+            // Double Damage is applied here rather than on the Weapon so
+            // the weapon classes and their stats stay untouched.
+            let damagePerPellet = weapon.damage * pickupDirector.damageMultiplier / CGFloat(pellets)
             for _ in 0..<pellets {
                 // Shotguns are simply several hitscans with angular spread.
                 let spread = pellets > 1
@@ -249,7 +269,7 @@ final class GameScene: SKScene {
             let bullet = Bullet(
                 position: player.position,
                 velocity: CGVector(dx: direction.dx * weapon.bulletSpeed, dy: direction.dy * weapon.bulletSpeed),
-                damage: weapon.damage,
+                damage: weapon.damage * pickupDirector.damageMultiplier,
                 maxRange: weapon.range,
                 behavior: weapon.bulletBehavior
             )
@@ -380,6 +400,53 @@ final class GameScene: SKScene {
         coins.removeAll { candidate in collected.contains { $0 === candidate } }
     }
 
+    // MARK: - Pickups
+
+    private func updatePickups(deltaTime: TimeInterval) {
+        for type in pickupDirector.typesToSpawn(at: gameClock, enemiesAlive: enemies.contains(where: { $0.isAlive })) {
+            guard let position = PickupDirector.randomFloorPosition(in: map, awayFrom: player.position) else { continue }
+            pickups.append(Pickup(type: type, position: position, spawnClock: gameClock))
+        }
+
+        var consumed: [Pickup] = []
+        for pickup in pickups {
+            pickup.advanceAnimation(deltaTime: deltaTime)
+            if pickup.hasExpired(at: gameClock) {
+                consumed.append(pickup)
+                continue
+            }
+            if distance(pickup.position, player.position) < Balance.pickupCollectRadius {
+                collect(pickup)
+                consumed.append(pickup)
+            }
+        }
+        guard !consumed.isEmpty else { return }
+        pickups.removeAll { candidate in consumed.contains { $0 === candidate } }
+    }
+
+    private func collect(_ pickup: Pickup) {
+        pickup.markCollected()
+        AudioManagerProvider.shared.playSFX("pickup_\(pickup.type.rawValue)")
+        switch pickup.type {
+        case .medkit:
+            player.heal(fraction: Balance.medkitHealFraction)
+        case .doubleDamage, .speedBoost:
+            pickupDirector.activateBuff(pickup.type, at: gameClock)
+        case .nuke:
+            detonateNuke()
+        }
+    }
+
+    /// Kills every living zombie at once. Each still routes through the
+    /// normal death path, so they drop their usual coins and the wave
+    /// bookkeeping stays correct — a nuke is a shortcut, not an exception.
+    private func detonateNuke() {
+        for enemy in enemies where enemy.isAlive {
+            enemy.takeDamage(enemy.health)
+            handleEnemyDeath(enemy)
+        }
+    }
+
     /// Round end: nothing is lost — every coin still on the field is
     /// credited immediately.
     private func collectAllCoins() {
@@ -397,7 +464,7 @@ final class GameScene: SKScene {
         renderer.render(camera: camera, map: map)
 
         var sprites: [BillboardSprite] = []
-        sprites.reserveCapacity(enemies.count + coins.count + bullets.count)
+        sprites.reserveCapacity(enemies.count + coins.count + bullets.count + pickups.count)
         for enemy in enemies {
             guard let texture = enemy.currentTexture else { continue }
             sprites.append(BillboardSprite(worldPosition: enemy.position, texture: texture))
@@ -405,6 +472,14 @@ final class GameScene: SKScene {
         for coin in coins {
             guard let texture = coin.currentTexture else { continue }
             sprites.append(BillboardSprite(worldPosition: coin.position, texture: texture, heightScale: 0.28, widthScale: 0.28))
+        }
+        for pickup in pickups {
+            guard let texture = pickup.currentTexture else { continue }
+            sprites.append(BillboardSprite(
+                worldPosition: pickup.position, texture: texture,
+                heightScale: 0.32, widthScale: 0.32,
+                alpha: pickup.alpha(at: gameClock)
+            ))
         }
         if let bulletTexture = Bullet.billboardTexture {
             for bullet in bullets {
@@ -436,7 +511,8 @@ final class GameScene: SKScene {
             perks: player.perks,
             // The FPS control layer owns its own swap button, so the HUD's
             // duplicate is suppressed.
-            showSwapButton: false
+            showSwapButton: false,
+            activeBuffs: pickupDirector.activeBuffs(at: gameClock)
         ))
     }
 
@@ -531,6 +607,7 @@ final class GameScene: SKScene {
         hud.hideNextRoundButton()
         hud.hideShopButton()
         waveManager.startNextRound()
+        pickupDirector.roundDidStart(at: gameClock)
     }
 
     private func openShop() {
@@ -585,6 +662,10 @@ extension GameScene: WaveManagerDelegate {
     func waveManagerRoundDidComplete(_ manager: WaveManager, round: Int) {
         enemies.removeAll { !$0.isAlive }
         collectAllCoins()
+        // Flat wave-clear bonus, paid the moment the last zombie dies.
+        economyManager.addCoins(Balance.waveClearBonus(forRound: round))
+        pickupDirector.roundDidEnd()
+        pickups.removeAll()
         hud.showNextRoundButton()
         hud.showShopButton()
     }

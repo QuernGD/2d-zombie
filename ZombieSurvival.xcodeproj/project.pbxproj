@@ -7,112 +7,116 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3F9F89ABD7B44DFAB5B796F6 /* ZombieSurvivalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1D2A1F0BCE442591C51FB9 /* ZombieSurvivalApp.swift */; };
-		AA41ECFBF4ED4552B917DC57 /* GameContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928CA0079D0A4D3496DD056C /* GameContainerView.swift */; };
-		3C67B69215FC488CBEB66623 /* Balance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A16ED8EC4B48BFA68CE056 /* Balance.swift */; };
-		90A8ED05A9AB40DE938509C0 /* RaycasterConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 017D1ECAD1E343E9938DB792 /* RaycasterConfig.swift */; };
-		AF873F07649B4B4EBC64F16C /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18CC18C60994C588420AE28 /* Geometry.swift */; };
-		85B46FAC01E1450BB769C42C /* AssetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D49FFE2728A407B98AEC557 /* AssetProvider.swift */; };
-		B59591D34FEE4D56986C7C87 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8EE36C3012A44CB899E3CB6 /* GameState.swift */; };
-		65D3A60C4B3A4F3ABCD5208A /* ControlScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80AD7BD7768454DA12FB84E /* ControlScheme.swift */; };
-		43CA91578C8B47F68A1F2071 /* VirtualJoystick.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64460F5D9C0D4249B6E32BFB /* VirtualJoystick.swift */; };
-		F7521398CF1047FBAF44818C /* FPSControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20DAC5D38132435F909D006E /* FPSControls.swift */; };
-		4D101B9FAEBB4B789ABF8500 /* Weapon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BD4DEDD17743E49DC6A77F /* Weapon.swift */; };
-		066559D0C5E0453B9A619389 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04EC14A2ED64CA3B5CD65FA /* Player.swift */; };
-		02DB7C57BD364B348E74D0BF /* Bullet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 065287A94FA5487F9704DC5D /* Bullet.swift */; };
-		9076B24AF9784D41A59F8E14 /* Enemy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1DAEC12AAA74004947A27EB /* Enemy.swift */; };
-		C8A5AFC0790D46EE80324A9E /* Walker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF73BEF9DA834D63A554F607 /* Walker.swift */; };
-		E3DAC5DE31ED4A1390671E35 /* WeaponInventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B775D4077934220819836D2 /* WeaponInventory.swift */; };
-		CB2D137D5D944B7FBFC66687 /* Perk.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF8E2F3ED2D34629B4CC0B21 /* Perk.swift */; };
-		6113DFD1086B47E3B1A8C97D /* CoinPickup.swift in Sources */ = {isa = PBXBuildFile; fileRef = C96B6CD2DBCC49C7B0A31743 /* CoinPickup.swift */; };
-		9CE3FC316CA2412FA1019772 /* SMG.swift in Sources */ = {isa = PBXBuildFile; fileRef = D414B8F44EED4BE9A299BC22 /* SMG.swift */; };
-		18C6E3ACD4624BB3A97588EA /* Shotgun.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1218858B4A46A29726B127 /* Shotgun.swift */; };
-		B68212D37337465FBC731CFC /* AssaultRifle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A4B56CB04B4910BB477A57 /* AssaultRifle.swift */; };
-		0D4D7349F2FA4C0191387287 /* Sniper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD86B9F870F4C75A22C2FAC /* Sniper.swift */; };
-		22C3974EA7284A7DA765B0F0 /* LMG.swift in Sources */ = {isa = PBXBuildFile; fileRef = C952684CF9C6417C9B36200A /* LMG.swift */; };
-		C30E1B3B4A6B475FBB8C4F17 /* GrenadeLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D237B7D049D47539DE98F86 /* GrenadeLauncher.swift */; };
-		8A541576075A451F9C0D7C86 /* ArcCannon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691EA868CADE4301BEE39A95 /* ArcCannon.swift */; };
-		9FF0E2D3EB8346B19417F0AC /* WaveManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A50E5EE8644E85A9CF8DC7 /* WaveManager.swift */; };
-		90E7D502D748436FBB2497E3 /* EconomyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CEB5219B1D480CADAEBF07 /* EconomyManager.swift */; };
-		94D59AFD8A754E7D94F57E2E /* SaveSlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8159621DAEEB408A9B760383 /* SaveSlot.swift */; };
-		8DEFEDAF756F4C48AB87AFAE /* SaveManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71172588329443DD9D35FBFB /* SaveManager.swift */; };
-		CAE7A8F81082490C9C7AFD0B /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CAE2AC2CE64EEBA03C7C9E /* SettingsStore.swift */; };
-		C49583F3B7704745800AD911 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56463E014FA04DEDA5B4CD71 /* AudioManager.swift */; };
-		5BAEE1AA4C564E08BE2258FA /* MapLayouts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CF89DF4575A45B08F13E9FE /* MapLayouts.swift */; };
-		448A10C2B7F44BC9B14C739E /* NavGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F691D4A3B84B8A9108B2DB /* NavGrid.swift */; };
-		CA90CAAD0F37494CA9752003 /* MapModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20EA7ADBDBA440108565C8CB /* MapModel.swift */; };
-		194A2D440A90479F9CF54AD9 /* HitscanResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390C4D85090C47679DB076C6 /* HitscanResolver.swift */; };
-		23CE75B01D914BDEA7A77F2A /* WallTextureCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC7EC37C372442ADBD48284C /* WallTextureCache.swift */; };
-		3C6218EAC83D48D0A1FC5A6A /* RaycastRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873A659753DD459AA4EE52CC /* RaycastRenderer.swift */; };
-		7716A918D06E42789417C94D /* BillboardRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 729072329D944D47BE695329 /* BillboardRenderer.swift */; };
-		7DAF772652314191A0B6B662 /* WeaponViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16EF5A7A8A7144BCB2051A54 /* WeaponViewModel.swift */; };
-		71033BA2A44F4543BF12EDE3 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91573995F2644A318FA2DBC9 /* GameScene.swift */; };
-		60CC63A733F04A96B16142C1 /* ShopScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E572B902D29447BBC1D70BE /* ShopScene.swift */; };
-		184D4B9083D84C23ADD95214 /* MainMenuScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98515A15F8C24CE1918AD06F /* MainMenuScene.swift */; };
-		927B6C714F5149D49A9A0F25 /* MapSelectScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EF330D1DFD54FD6BC7DA062 /* MapSelectScene.swift */; };
-		7BFC6488135846ACA1388C86 /* LoadGameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D124127BC3949F7BD1E4299 /* LoadGameScene.swift */; };
-		D95A45DDA87046758BB605B5 /* SettingsScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A73E216E4D4F64B63B4A16 /* SettingsScene.swift */; };
-		4666975B79AC49349265FD6C /* PauseMenuScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F480DB7E091433BB5CCE669 /* PauseMenuScene.swift */; };
-		EA353D75AB92419ABA21AC95 /* HUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA7E7B9A276B42F3BC891D03 /* HUD.swift */; };
-		795F671D853549FEBDC2B374 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DEBDCF921B5B4FDE8439BA64 /* Assets.xcassets */; };
-		DD465BD1CCA94610BF4B5E76 /* Assets in Resources */ = {isa = PBXBuildFile; fileRef = 8646B4E3D65A48E8B6EBCAA2 /* Assets */; };
+		4BE80E2DC32D4CD2B9AB8CCB /* ZombieSurvivalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F96D378AB84C58ACDAA6EC /* ZombieSurvivalApp.swift */; };
+		F3508E95A1C84A3681F14AA5 /* GameContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F2374CDB26451B93906511 /* GameContainerView.swift */; };
+		E62D887B04DE425A845D34EB /* Balance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C75C0F3E2874B54920B844D /* Balance.swift */; };
+		4CAD6F0345064A01B4A6F2C7 /* RaycasterConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EBF476B9F194CDB865E8F27 /* RaycasterConfig.swift */; };
+		59F5F8AB69DA4AEE8629F223 /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1AC55044E244EB9A6BB172 /* Geometry.swift */; };
+		DAD9B742FC03487EA2AC5648 /* AssetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FBE271888C0449B9B1505D5 /* AssetProvider.swift */; };
+		A68A612B9B1849FD888D69E0 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DAAC68747B4CC3B2DE5B59 /* GameState.swift */; };
+		E2DFF24EA371497AA0A034B5 /* ControlScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F08AC137B5485E84C5D718 /* ControlScheme.swift */; };
+		BC2E027973F64BEDBE293FAD /* VirtualJoystick.swift in Sources */ = {isa = PBXBuildFile; fileRef = 432EF879475647A1A5C8A64A /* VirtualJoystick.swift */; };
+		19F23A2C3ED948169D5892E9 /* FPSControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E91899742F4DCE8238A8FC /* FPSControls.swift */; };
+		5387DA1789F74D75B8FEE39F /* Weapon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E206D8B099B460496197BEE /* Weapon.swift */; };
+		AE635510E29D4898B4EF8760 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E8E39DFC3DE43C4B43650F4 /* Player.swift */; };
+		D2849FCEDB364E8A918144DC /* Bullet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F47AC9AC82B8494F8548FD8F /* Bullet.swift */; };
+		7E94370131C44CBD84637EAD /* Enemy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0103770A8164876A9ECFE03 /* Enemy.swift */; };
+		2760293620C1491E9B337D17 /* Walker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA4261ADF7A94667B8AE69B9 /* Walker.swift */; };
+		AFCBFB385E4D4489BE635DDB /* WeaponInventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E29280DED53C4CF08D17848E /* WeaponInventory.swift */; };
+		FF94BFBE2F3640E8ACF923D2 /* Perk.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD38D5AD451344088121BD6F /* Perk.swift */; };
+		8E290ED110C84A4982D0F191 /* CoinPickup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21BFCBF4A8D4D6EA977AA91 /* CoinPickup.swift */; };
+		B37FFFE35B1E4428B4ED78FB /* Pickup.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C83A2EB4C14F49977C0F56 /* Pickup.swift */; };
+		025FF6CDA54F41E9A0975C61 /* SMG.swift in Sources */ = {isa = PBXBuildFile; fileRef = 621CFDB91185472B9E244215 /* SMG.swift */; };
+		7A1BFE865CC646E99FDE83EF /* Shotgun.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77B6335F702E43B69CAD2DEA /* Shotgun.swift */; };
+		00AA5A2B3E054F6BB04B1FA4 /* AssaultRifle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B21C7A916346F5A03D9EFD /* AssaultRifle.swift */; };
+		66D2AD63ABFB473E9638F9D9 /* Sniper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049E8C69259B42DB808DED36 /* Sniper.swift */; };
+		0681408336C740FEB2D48FAA /* LMG.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D06833352442AE858B675B /* LMG.swift */; };
+		AA26FD5F2DC645D3A130F16A /* GrenadeLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92BC3152F7E94D3B80ED9FAA /* GrenadeLauncher.swift */; };
+		EC0E735BCCD147D8A0C587C8 /* ArcCannon.swift in Sources */ = {isa = PBXBuildFile; fileRef = F057097247C94A64842CACEC /* ArcCannon.swift */; };
+		F8407C7D210B48B7BEBF3A28 /* WaveManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 447FF7E8DAC54783B0B6EA80 /* WaveManager.swift */; };
+		4E9FC039503F4373A51F6E9A /* EconomyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2FD124B76F2473BA30B0113 /* EconomyManager.swift */; };
+		D6260C930B8A46BABBD761A0 /* SaveSlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C48571414C4D998201B20C /* SaveSlot.swift */; };
+		C71C2F321FC94BF5A230EA0C /* SaveManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C136A08D4A540C39980E461 /* SaveManager.swift */; };
+		D2BBA25AB5144F6DBACCF739 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33F32DA389B3492AB1EE7D00 /* SettingsStore.swift */; };
+		B6B5018D860B48FC8827B77B /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52186207E1844544AC87BEC6 /* AudioManager.swift */; };
+		1F8CB065D3EC4B7C95D921AA /* MapLayouts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5987D49D2D2D4C689F1BB584 /* MapLayouts.swift */; };
+		0AC75DA9E9684AA9A1A09770 /* NavGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = EACE2CBB56A04DFFAB9E29FB /* NavGrid.swift */; };
+		198F51061A51402A8CDE3BFB /* MapModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA8635B93A03404A83AFA1CC /* MapModel.swift */; };
+		9238902FCFCE402AA226C0CC /* HitscanResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 717B23FE4F324059A37BD97B /* HitscanResolver.swift */; };
+		1A0E19D153194C44919CC1ED /* PickupDirector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C01CBD6CFBC48DB8F84BCE1 /* PickupDirector.swift */; };
+		1B4ADEF5789E4C73A81BD8A8 /* WallTextureCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FBA351AEF754ED3AAB5E521 /* WallTextureCache.swift */; };
+		394257EEEFB240AA8490B995 /* RaycastRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1498D5AC5CA440CE97744134 /* RaycastRenderer.swift */; };
+		BBEA103771444BA787779314 /* BillboardRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72607D0363E54811930F37F9 /* BillboardRenderer.swift */; };
+		456539D91A3041FDB5D6AC7D /* WeaponViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7998369BAC1743B892103876 /* WeaponViewModel.swift */; };
+		5A9229539F754A4B97CEDE16 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29F2966F234F4CF6A0AB26F7 /* GameScene.swift */; };
+		55241EBC1BE64451A7AEAADC /* ShopScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0084DA4E6343426F89FD17FC /* ShopScene.swift */; };
+		48CBD205083D4314A3B62549 /* MainMenuScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7117A9A1E6894658BD4B41F0 /* MainMenuScene.swift */; };
+		8303525590EB4F88BD4C9FFC /* MapSelectScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A7961A834242BCA4C0EC30 /* MapSelectScene.swift */; };
+		16479DD1389443D48386C5AA /* LoadGameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23EDF4CE936D400CB98551A1 /* LoadGameScene.swift */; };
+		04E6646D3F3342AC8854EF94 /* SettingsScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FAC56F1A05A4AE08BBC7B38 /* SettingsScene.swift */; };
+		F6EFFE96635B4D8D91531D31 /* PauseMenuScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = C322B3EFBC0B420C9FF74609 /* PauseMenuScene.swift */; };
+		941A241986A346BB89723162 /* HUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612BEACF09094EB380291655 /* HUD.swift */; };
+		3623857407F8479C9388EF67 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A2BFF1082FB4F1E9E71AE1A /* Assets.xcassets */; };
+		94819472F0274BB3AAE7DBD3 /* Assets in Resources */ = {isa = PBXBuildFile; fileRef = DA8762E614364299AE6E0E4B /* Assets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		E583CEF0329A4BF7ACEBD4EC /* ZombieSurvival.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZombieSurvival.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CF1D2A1F0BCE442591C51FB9 /* ZombieSurvivalApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZombieSurvivalApp.swift; sourceTree = "<group>"; };
-		928CA0079D0A4D3496DD056C /* GameContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameContainerView.swift; sourceTree = "<group>"; };
-		16A16ED8EC4B48BFA68CE056 /* Balance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Balance.swift; sourceTree = "<group>"; };
-		017D1ECAD1E343E9938DB792 /* RaycasterConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycasterConfig.swift; sourceTree = "<group>"; };
-		C18CC18C60994C588420AE28 /* Geometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geometry.swift; sourceTree = "<group>"; };
-		1D49FFE2728A407B98AEC557 /* AssetProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetProvider.swift; sourceTree = "<group>"; };
-		F8EE36C3012A44CB899E3CB6 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
-		B80AD7BD7768454DA12FB84E /* ControlScheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlScheme.swift; sourceTree = "<group>"; };
-		64460F5D9C0D4249B6E32BFB /* VirtualJoystick.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualJoystick.swift; sourceTree = "<group>"; };
-		20DAC5D38132435F909D006E /* FPSControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FPSControls.swift; sourceTree = "<group>"; };
-		06BD4DEDD17743E49DC6A77F /* Weapon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Weapon.swift; sourceTree = "<group>"; };
-		C04EC14A2ED64CA3B5CD65FA /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
-		065287A94FA5487F9704DC5D /* Bullet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bullet.swift; sourceTree = "<group>"; };
-		A1DAEC12AAA74004947A27EB /* Enemy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Enemy.swift; sourceTree = "<group>"; };
-		CF73BEF9DA834D63A554F607 /* Walker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Walker.swift; sourceTree = "<group>"; };
-		4B775D4077934220819836D2 /* WeaponInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeaponInventory.swift; sourceTree = "<group>"; };
-		DF8E2F3ED2D34629B4CC0B21 /* Perk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Perk.swift; sourceTree = "<group>"; };
-		C96B6CD2DBCC49C7B0A31743 /* CoinPickup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPickup.swift; sourceTree = "<group>"; };
-		D414B8F44EED4BE9A299BC22 /* SMG.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SMG.swift; sourceTree = "<group>"; };
-		CC1218858B4A46A29726B127 /* Shotgun.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shotgun.swift; sourceTree = "<group>"; };
-		43A4B56CB04B4910BB477A57 /* AssaultRifle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssaultRifle.swift; sourceTree = "<group>"; };
-		4DD86B9F870F4C75A22C2FAC /* Sniper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sniper.swift; sourceTree = "<group>"; };
-		C952684CF9C6417C9B36200A /* LMG.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LMG.swift; sourceTree = "<group>"; };
-		7D237B7D049D47539DE98F86 /* GrenadeLauncher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrenadeLauncher.swift; sourceTree = "<group>"; };
-		691EA868CADE4301BEE39A95 /* ArcCannon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcCannon.swift; sourceTree = "<group>"; };
-		46A50E5EE8644E85A9CF8DC7 /* WaveManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveManager.swift; sourceTree = "<group>"; };
-		E2CEB5219B1D480CADAEBF07 /* EconomyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomyManager.swift; sourceTree = "<group>"; };
-		8159621DAEEB408A9B760383 /* SaveSlot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveSlot.swift; sourceTree = "<group>"; };
-		71172588329443DD9D35FBFB /* SaveManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveManager.swift; sourceTree = "<group>"; };
-		75CAE2AC2CE64EEBA03C7C9E /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
-		56463E014FA04DEDA5B4CD71 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
-		5CF89DF4575A45B08F13E9FE /* MapLayouts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapLayouts.swift; sourceTree = "<group>"; };
-		D8F691D4A3B84B8A9108B2DB /* NavGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavGrid.swift; sourceTree = "<group>"; };
-		20EA7ADBDBA440108565C8CB /* MapModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapModel.swift; sourceTree = "<group>"; };
-		390C4D85090C47679DB076C6 /* HitscanResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HitscanResolver.swift; sourceTree = "<group>"; };
-		DC7EC37C372442ADBD48284C /* WallTextureCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallTextureCache.swift; sourceTree = "<group>"; };
-		873A659753DD459AA4EE52CC /* RaycastRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastRenderer.swift; sourceTree = "<group>"; };
-		729072329D944D47BE695329 /* BillboardRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillboardRenderer.swift; sourceTree = "<group>"; };
-		16EF5A7A8A7144BCB2051A54 /* WeaponViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeaponViewModel.swift; sourceTree = "<group>"; };
-		91573995F2644A318FA2DBC9 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
-		5E572B902D29447BBC1D70BE /* ShopScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopScene.swift; sourceTree = "<group>"; };
-		98515A15F8C24CE1918AD06F /* MainMenuScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuScene.swift; sourceTree = "<group>"; };
-		4EF330D1DFD54FD6BC7DA062 /* MapSelectScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSelectScene.swift; sourceTree = "<group>"; };
-		8D124127BC3949F7BD1E4299 /* LoadGameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadGameScene.swift; sourceTree = "<group>"; };
-		09A73E216E4D4F64B63B4A16 /* SettingsScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScene.swift; sourceTree = "<group>"; };
-		6F480DB7E091433BB5CCE669 /* PauseMenuScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PauseMenuScene.swift; sourceTree = "<group>"; };
-		BA7E7B9A276B42F3BC891D03 /* HUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUD.swift; sourceTree = "<group>"; };
-		DEBDCF921B5B4FDE8439BA64 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		8646B4E3D65A48E8B6EBCAA2 /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Assets; sourceTree = "<group>"; };
+		8DE96E1509674ECCB3F4AD54 /* ZombieSurvival.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZombieSurvival.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		59F96D378AB84C58ACDAA6EC /* ZombieSurvivalApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZombieSurvivalApp.swift; sourceTree = "<group>"; };
+		B9F2374CDB26451B93906511 /* GameContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameContainerView.swift; sourceTree = "<group>"; };
+		6C75C0F3E2874B54920B844D /* Balance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Balance.swift; sourceTree = "<group>"; };
+		4EBF476B9F194CDB865E8F27 /* RaycasterConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycasterConfig.swift; sourceTree = "<group>"; };
+		AA1AC55044E244EB9A6BB172 /* Geometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geometry.swift; sourceTree = "<group>"; };
+		7FBE271888C0449B9B1505D5 /* AssetProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetProvider.swift; sourceTree = "<group>"; };
+		B4DAAC68747B4CC3B2DE5B59 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
+		92F08AC137B5485E84C5D718 /* ControlScheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlScheme.swift; sourceTree = "<group>"; };
+		432EF879475647A1A5C8A64A /* VirtualJoystick.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualJoystick.swift; sourceTree = "<group>"; };
+		A0E91899742F4DCE8238A8FC /* FPSControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FPSControls.swift; sourceTree = "<group>"; };
+		9E206D8B099B460496197BEE /* Weapon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Weapon.swift; sourceTree = "<group>"; };
+		0E8E39DFC3DE43C4B43650F4 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+		F47AC9AC82B8494F8548FD8F /* Bullet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bullet.swift; sourceTree = "<group>"; };
+		F0103770A8164876A9ECFE03 /* Enemy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Enemy.swift; sourceTree = "<group>"; };
+		FA4261ADF7A94667B8AE69B9 /* Walker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Walker.swift; sourceTree = "<group>"; };
+		E29280DED53C4CF08D17848E /* WeaponInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeaponInventory.swift; sourceTree = "<group>"; };
+		BD38D5AD451344088121BD6F /* Perk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Perk.swift; sourceTree = "<group>"; };
+		B21BFCBF4A8D4D6EA977AA91 /* CoinPickup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPickup.swift; sourceTree = "<group>"; };
+		A4C83A2EB4C14F49977C0F56 /* Pickup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pickup.swift; sourceTree = "<group>"; };
+		621CFDB91185472B9E244215 /* SMG.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SMG.swift; sourceTree = "<group>"; };
+		77B6335F702E43B69CAD2DEA /* Shotgun.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shotgun.swift; sourceTree = "<group>"; };
+		49B21C7A916346F5A03D9EFD /* AssaultRifle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssaultRifle.swift; sourceTree = "<group>"; };
+		049E8C69259B42DB808DED36 /* Sniper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sniper.swift; sourceTree = "<group>"; };
+		C5D06833352442AE858B675B /* LMG.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LMG.swift; sourceTree = "<group>"; };
+		92BC3152F7E94D3B80ED9FAA /* GrenadeLauncher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrenadeLauncher.swift; sourceTree = "<group>"; };
+		F057097247C94A64842CACEC /* ArcCannon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcCannon.swift; sourceTree = "<group>"; };
+		447FF7E8DAC54783B0B6EA80 /* WaveManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveManager.swift; sourceTree = "<group>"; };
+		C2FD124B76F2473BA30B0113 /* EconomyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomyManager.swift; sourceTree = "<group>"; };
+		69C48571414C4D998201B20C /* SaveSlot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveSlot.swift; sourceTree = "<group>"; };
+		2C136A08D4A540C39980E461 /* SaveManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveManager.swift; sourceTree = "<group>"; };
+		33F32DA389B3492AB1EE7D00 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		52186207E1844544AC87BEC6 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		5987D49D2D2D4C689F1BB584 /* MapLayouts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapLayouts.swift; sourceTree = "<group>"; };
+		EACE2CBB56A04DFFAB9E29FB /* NavGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavGrid.swift; sourceTree = "<group>"; };
+		FA8635B93A03404A83AFA1CC /* MapModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapModel.swift; sourceTree = "<group>"; };
+		717B23FE4F324059A37BD97B /* HitscanResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HitscanResolver.swift; sourceTree = "<group>"; };
+		0C01CBD6CFBC48DB8F84BCE1 /* PickupDirector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickupDirector.swift; sourceTree = "<group>"; };
+		7FBA351AEF754ED3AAB5E521 /* WallTextureCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WallTextureCache.swift; sourceTree = "<group>"; };
+		1498D5AC5CA440CE97744134 /* RaycastRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastRenderer.swift; sourceTree = "<group>"; };
+		72607D0363E54811930F37F9 /* BillboardRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillboardRenderer.swift; sourceTree = "<group>"; };
+		7998369BAC1743B892103876 /* WeaponViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeaponViewModel.swift; sourceTree = "<group>"; };
+		29F2966F234F4CF6A0AB26F7 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
+		0084DA4E6343426F89FD17FC /* ShopScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopScene.swift; sourceTree = "<group>"; };
+		7117A9A1E6894658BD4B41F0 /* MainMenuScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuScene.swift; sourceTree = "<group>"; };
+		88A7961A834242BCA4C0EC30 /* MapSelectScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSelectScene.swift; sourceTree = "<group>"; };
+		23EDF4CE936D400CB98551A1 /* LoadGameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadGameScene.swift; sourceTree = "<group>"; };
+		4FAC56F1A05A4AE08BBC7B38 /* SettingsScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScene.swift; sourceTree = "<group>"; };
+		C322B3EFBC0B420C9FF74609 /* PauseMenuScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PauseMenuScene.swift; sourceTree = "<group>"; };
+		612BEACF09094EB380291655 /* HUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUD.swift; sourceTree = "<group>"; };
+		4A2BFF1082FB4F1E9E71AE1A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DA8762E614364299AE6E0E4B /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Assets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		BAAB3C1D4FDC424D92DB9416 /* Frameworks */ = {
+		9DADA0ED6DB1487B83C85E64 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,146 +126,148 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		717380A7A93941EF82518239 = {
+		5D9A3A8A46094E02B1F1863F = {
 			isa = PBXGroup;
 			children = (
-				3641BC0A1A0F405EB8023135 /* ZombieSurvival */,
-				A05E14783DC34E88A0A263F7 /* Products */,
+				3A903AB1C1B840B48D1B75A1 /* ZombieSurvival */,
+				C9415D2F41104E61A9C1AF34 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		3641BC0A1A0F405EB8023135 = {
+		3A903AB1C1B840B48D1B75A1 = {
 			isa = PBXGroup;
 			children = (
-				CF1D2A1F0BCE442591C51FB9 /* ZombieSurvivalApp.swift */,
-				928CA0079D0A4D3496DD056C /* GameContainerView.swift */,
-				6F0EF9FB92934184A312F514 /* Config */,
-				3E1AE82C8E844A779F768771 /* Support */,
-				1AD49D1587C1459DBA054621 /* State */,
-				7613F15EE29B4AA9A4C1A1DA /* Controls */,
-				B5E123337A4541DFAD1A0360 /* Entities */,
-				987EAE9884AE496DBDFBA057 /* Systems */,
-				734DED81683842B29CAED6BE /* Raycaster */,
-				EB6AF2E93C934023855F9963 /* Scenes */,
-				7D7E1FFE245441BCBBDB305E /* HUD */,
-				DEBDCF921B5B4FDE8439BA64 /* Assets.xcassets */,
-				8646B4E3D65A48E8B6EBCAA2 /* Assets */,
+				59F96D378AB84C58ACDAA6EC /* ZombieSurvivalApp.swift */,
+				B9F2374CDB26451B93906511 /* GameContainerView.swift */,
+				E21CCC83245B492FBF41C4A1 /* Config */,
+				29B338A6591C4371AAEA50D8 /* Support */,
+				8A1135F71E744EE18467C926 /* State */,
+				0A1007311F14429D84C85F35 /* Controls */,
+				07A0239005684B888FB882FF /* Entities */,
+				90172EA8899B4979A50D3C79 /* Systems */,
+				B685D58EBE2C4C8AA2D292D5 /* Raycaster */,
+				6BE19EDE135742C69E1DDD49 /* Scenes */,
+				F92F2590D62A4AC38DF2E6ED /* HUD */,
+				4A2BFF1082FB4F1E9E71AE1A /* Assets.xcassets */,
+				DA8762E614364299AE6E0E4B /* Assets */,
 			);
 			path = "ZombieSurvival";
 			sourceTree = "<group>";
 		};
-		6F0EF9FB92934184A312F514 = {
+		E21CCC83245B492FBF41C4A1 = {
 			isa = PBXGroup;
 			children = (
-				16A16ED8EC4B48BFA68CE056 /* Balance.swift */,
-				017D1ECAD1E343E9938DB792 /* RaycasterConfig.swift */,
+				6C75C0F3E2874B54920B844D /* Balance.swift */,
+				4EBF476B9F194CDB865E8F27 /* RaycasterConfig.swift */,
 			);
 			path = "Config";
 			sourceTree = "<group>";
 		};
-		3E1AE82C8E844A779F768771 = {
+		29B338A6591C4371AAEA50D8 = {
 			isa = PBXGroup;
 			children = (
-				C18CC18C60994C588420AE28 /* Geometry.swift */,
-				1D49FFE2728A407B98AEC557 /* AssetProvider.swift */,
+				AA1AC55044E244EB9A6BB172 /* Geometry.swift */,
+				7FBE271888C0449B9B1505D5 /* AssetProvider.swift */,
 			);
 			path = "Support";
 			sourceTree = "<group>";
 		};
-		1AD49D1587C1459DBA054621 = {
+		8A1135F71E744EE18467C926 = {
 			isa = PBXGroup;
 			children = (
-				F8EE36C3012A44CB899E3CB6 /* GameState.swift */,
+				B4DAAC68747B4CC3B2DE5B59 /* GameState.swift */,
 			);
 			path = "State";
 			sourceTree = "<group>";
 		};
-		7613F15EE29B4AA9A4C1A1DA = {
+		0A1007311F14429D84C85F35 = {
 			isa = PBXGroup;
 			children = (
-				B80AD7BD7768454DA12FB84E /* ControlScheme.swift */,
-				64460F5D9C0D4249B6E32BFB /* VirtualJoystick.swift */,
-				20DAC5D38132435F909D006E /* FPSControls.swift */,
+				92F08AC137B5485E84C5D718 /* ControlScheme.swift */,
+				432EF879475647A1A5C8A64A /* VirtualJoystick.swift */,
+				A0E91899742F4DCE8238A8FC /* FPSControls.swift */,
 			);
 			path = "Controls";
 			sourceTree = "<group>";
 		};
-		B5E123337A4541DFAD1A0360 = {
+		07A0239005684B888FB882FF = {
 			isa = PBXGroup;
 			children = (
-				06BD4DEDD17743E49DC6A77F /* Weapon.swift */,
-				C04EC14A2ED64CA3B5CD65FA /* Player.swift */,
-				065287A94FA5487F9704DC5D /* Bullet.swift */,
-				A1DAEC12AAA74004947A27EB /* Enemy.swift */,
-				CF73BEF9DA834D63A554F607 /* Walker.swift */,
-				4B775D4077934220819836D2 /* WeaponInventory.swift */,
-				DF8E2F3ED2D34629B4CC0B21 /* Perk.swift */,
-				C96B6CD2DBCC49C7B0A31743 /* CoinPickup.swift */,
-				D414B8F44EED4BE9A299BC22 /* SMG.swift */,
-				CC1218858B4A46A29726B127 /* Shotgun.swift */,
-				43A4B56CB04B4910BB477A57 /* AssaultRifle.swift */,
-				4DD86B9F870F4C75A22C2FAC /* Sniper.swift */,
-				C952684CF9C6417C9B36200A /* LMG.swift */,
-				7D237B7D049D47539DE98F86 /* GrenadeLauncher.swift */,
-				691EA868CADE4301BEE39A95 /* ArcCannon.swift */,
+				9E206D8B099B460496197BEE /* Weapon.swift */,
+				0E8E39DFC3DE43C4B43650F4 /* Player.swift */,
+				F47AC9AC82B8494F8548FD8F /* Bullet.swift */,
+				F0103770A8164876A9ECFE03 /* Enemy.swift */,
+				FA4261ADF7A94667B8AE69B9 /* Walker.swift */,
+				E29280DED53C4CF08D17848E /* WeaponInventory.swift */,
+				BD38D5AD451344088121BD6F /* Perk.swift */,
+				B21BFCBF4A8D4D6EA977AA91 /* CoinPickup.swift */,
+				A4C83A2EB4C14F49977C0F56 /* Pickup.swift */,
+				621CFDB91185472B9E244215 /* SMG.swift */,
+				77B6335F702E43B69CAD2DEA /* Shotgun.swift */,
+				49B21C7A916346F5A03D9EFD /* AssaultRifle.swift */,
+				049E8C69259B42DB808DED36 /* Sniper.swift */,
+				C5D06833352442AE858B675B /* LMG.swift */,
+				92BC3152F7E94D3B80ED9FAA /* GrenadeLauncher.swift */,
+				F057097247C94A64842CACEC /* ArcCannon.swift */,
 			);
 			path = "Entities";
 			sourceTree = "<group>";
 		};
-		987EAE9884AE496DBDFBA057 = {
+		90172EA8899B4979A50D3C79 = {
 			isa = PBXGroup;
 			children = (
-				46A50E5EE8644E85A9CF8DC7 /* WaveManager.swift */,
-				E2CEB5219B1D480CADAEBF07 /* EconomyManager.swift */,
-				8159621DAEEB408A9B760383 /* SaveSlot.swift */,
-				71172588329443DD9D35FBFB /* SaveManager.swift */,
-				75CAE2AC2CE64EEBA03C7C9E /* SettingsStore.swift */,
-				56463E014FA04DEDA5B4CD71 /* AudioManager.swift */,
-				5CF89DF4575A45B08F13E9FE /* MapLayouts.swift */,
-				D8F691D4A3B84B8A9108B2DB /* NavGrid.swift */,
-				20EA7ADBDBA440108565C8CB /* MapModel.swift */,
-				390C4D85090C47679DB076C6 /* HitscanResolver.swift */,
+				447FF7E8DAC54783B0B6EA80 /* WaveManager.swift */,
+				C2FD124B76F2473BA30B0113 /* EconomyManager.swift */,
+				69C48571414C4D998201B20C /* SaveSlot.swift */,
+				2C136A08D4A540C39980E461 /* SaveManager.swift */,
+				33F32DA389B3492AB1EE7D00 /* SettingsStore.swift */,
+				52186207E1844544AC87BEC6 /* AudioManager.swift */,
+				5987D49D2D2D4C689F1BB584 /* MapLayouts.swift */,
+				EACE2CBB56A04DFFAB9E29FB /* NavGrid.swift */,
+				FA8635B93A03404A83AFA1CC /* MapModel.swift */,
+				717B23FE4F324059A37BD97B /* HitscanResolver.swift */,
+				0C01CBD6CFBC48DB8F84BCE1 /* PickupDirector.swift */,
 			);
 			path = "Systems";
 			sourceTree = "<group>";
 		};
-		734DED81683842B29CAED6BE = {
+		B685D58EBE2C4C8AA2D292D5 = {
 			isa = PBXGroup;
 			children = (
-				DC7EC37C372442ADBD48284C /* WallTextureCache.swift */,
-				873A659753DD459AA4EE52CC /* RaycastRenderer.swift */,
-				729072329D944D47BE695329 /* BillboardRenderer.swift */,
-				16EF5A7A8A7144BCB2051A54 /* WeaponViewModel.swift */,
+				7FBA351AEF754ED3AAB5E521 /* WallTextureCache.swift */,
+				1498D5AC5CA440CE97744134 /* RaycastRenderer.swift */,
+				72607D0363E54811930F37F9 /* BillboardRenderer.swift */,
+				7998369BAC1743B892103876 /* WeaponViewModel.swift */,
 			);
 			path = "Raycaster";
 			sourceTree = "<group>";
 		};
-		EB6AF2E93C934023855F9963 = {
+		6BE19EDE135742C69E1DDD49 = {
 			isa = PBXGroup;
 			children = (
-				91573995F2644A318FA2DBC9 /* GameScene.swift */,
-				5E572B902D29447BBC1D70BE /* ShopScene.swift */,
-				98515A15F8C24CE1918AD06F /* MainMenuScene.swift */,
-				4EF330D1DFD54FD6BC7DA062 /* MapSelectScene.swift */,
-				8D124127BC3949F7BD1E4299 /* LoadGameScene.swift */,
-				09A73E216E4D4F64B63B4A16 /* SettingsScene.swift */,
-				6F480DB7E091433BB5CCE669 /* PauseMenuScene.swift */,
+				29F2966F234F4CF6A0AB26F7 /* GameScene.swift */,
+				0084DA4E6343426F89FD17FC /* ShopScene.swift */,
+				7117A9A1E6894658BD4B41F0 /* MainMenuScene.swift */,
+				88A7961A834242BCA4C0EC30 /* MapSelectScene.swift */,
+				23EDF4CE936D400CB98551A1 /* LoadGameScene.swift */,
+				4FAC56F1A05A4AE08BBC7B38 /* SettingsScene.swift */,
+				C322B3EFBC0B420C9FF74609 /* PauseMenuScene.swift */,
 			);
 			path = "Scenes";
 			sourceTree = "<group>";
 		};
-		7D7E1FFE245441BCBBDB305E = {
+		F92F2590D62A4AC38DF2E6ED = {
 			isa = PBXGroup;
 			children = (
-				BA7E7B9A276B42F3BC891D03 /* HUD.swift */,
+				612BEACF09094EB380291655 /* HUD.swift */,
 			);
 			path = "HUD";
 			sourceTree = "<group>";
 		};
-		A05E14783DC34E88A0A263F7 = {
+		C9415D2F41104E61A9C1AF34 = {
 			isa = PBXGroup;
 			children = (
-				E583CEF0329A4BF7ACEBD4EC /* ZombieSurvival.app */,
+				8DE96E1509674ECCB3F4AD54 /* ZombieSurvival.app */,
 			);
 			name = "Products";
 			sourceTree = "<group>";
@@ -269,13 +275,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		6471D42EB9764AF2B308B788 /* ZombieSurvival */ = {
+		52EC719FC769402681CCA917 /* ZombieSurvival */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BFF6C3EF13A44131975B6FD4 /* Build configuration list for PBXNativeTarget "ZombieSurvival" */;
+			buildConfigurationList = 32C393EBE49A4814989F8B43 /* Build configuration list for PBXNativeTarget "ZombieSurvival" */;
 			buildPhases = (
-				0A929FB655F04EB9AAFC7B08 /* Sources */,
-				BAAB3C1D4FDC424D92DB9416 /* Frameworks */,
-				2C3EA2BF8CC447908E5A3019 /* Resources */,
+				B5235AF8C166491F8A27FA72 /* Sources */,
+				9DADA0ED6DB1487B83C85E64 /* Frameworks */,
+				9D1F0308C20342C897E99A8E /* Resources */,
 			);
 			buildRules = (
 			);
@@ -283,25 +289,25 @@
 			);
 			name = ZombieSurvival;
 			productName = ZombieSurvival;
-			productReference = E583CEF0329A4BF7ACEBD4EC /* ZombieSurvival.app */;
+			productReference = 8DE96E1509674ECCB3F4AD54 /* ZombieSurvival.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		F673F2FAC255454BB63F98F9 /* Project object */ = {
+		D2944CD6510B4EC1A4C6B732 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1510;
 				LastUpgradeCheck = 1510;
 				TargetAttributes = {
-					6471D42EB9764AF2B308B788 = {
+					52EC719FC769402681CCA917 = {
 						CreatedOnToolsVersion = 15.1;
 					};
 				};
 			};
-			buildConfigurationList = D514EDEABC7E4BF5B7F77623 /* Build configuration list for PBXProject "ZombieSurvival" */;
+			buildConfigurationList = 5558330A87CE45D79B1CBAFD /* Build configuration list for PBXProject "ZombieSurvival" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -309,87 +315,89 @@
 				en,
 				Base,
 			);
-			mainGroup = 717380A7A93941EF82518239;
-			productRefGroup = A05E14783DC34E88A0A263F7 /* Products */;
+			mainGroup = 5D9A3A8A46094E02B1F1863F;
+			productRefGroup = C9415D2F41104E61A9C1AF34 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				6471D42EB9764AF2B308B788 /* ZombieSurvival */,
+				52EC719FC769402681CCA917 /* ZombieSurvival */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		2C3EA2BF8CC447908E5A3019 /* Resources */ = {
+		9D1F0308C20342C897E99A8E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				795F671D853549FEBDC2B374 /* Assets.xcassets in Resources */,
-				DD465BD1CCA94610BF4B5E76 /* Assets in Resources */,
+				3623857407F8479C9388EF67 /* Assets.xcassets in Resources */,
+				94819472F0274BB3AAE7DBD3 /* Assets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		0A929FB655F04EB9AAFC7B08 /* Sources */ = {
+		B5235AF8C166491F8A27FA72 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3F9F89ABD7B44DFAB5B796F6 /* ZombieSurvivalApp.swift in Sources */,
-				AA41ECFBF4ED4552B917DC57 /* GameContainerView.swift in Sources */,
-				3C67B69215FC488CBEB66623 /* Balance.swift in Sources */,
-				90A8ED05A9AB40DE938509C0 /* RaycasterConfig.swift in Sources */,
-				AF873F07649B4B4EBC64F16C /* Geometry.swift in Sources */,
-				85B46FAC01E1450BB769C42C /* AssetProvider.swift in Sources */,
-				B59591D34FEE4D56986C7C87 /* GameState.swift in Sources */,
-				65D3A60C4B3A4F3ABCD5208A /* ControlScheme.swift in Sources */,
-				43CA91578C8B47F68A1F2071 /* VirtualJoystick.swift in Sources */,
-				F7521398CF1047FBAF44818C /* FPSControls.swift in Sources */,
-				4D101B9FAEBB4B789ABF8500 /* Weapon.swift in Sources */,
-				066559D0C5E0453B9A619389 /* Player.swift in Sources */,
-				02DB7C57BD364B348E74D0BF /* Bullet.swift in Sources */,
-				9076B24AF9784D41A59F8E14 /* Enemy.swift in Sources */,
-				C8A5AFC0790D46EE80324A9E /* Walker.swift in Sources */,
-				E3DAC5DE31ED4A1390671E35 /* WeaponInventory.swift in Sources */,
-				CB2D137D5D944B7FBFC66687 /* Perk.swift in Sources */,
-				6113DFD1086B47E3B1A8C97D /* CoinPickup.swift in Sources */,
-				9CE3FC316CA2412FA1019772 /* SMG.swift in Sources */,
-				18C6E3ACD4624BB3A97588EA /* Shotgun.swift in Sources */,
-				B68212D37337465FBC731CFC /* AssaultRifle.swift in Sources */,
-				0D4D7349F2FA4C0191387287 /* Sniper.swift in Sources */,
-				22C3974EA7284A7DA765B0F0 /* LMG.swift in Sources */,
-				C30E1B3B4A6B475FBB8C4F17 /* GrenadeLauncher.swift in Sources */,
-				8A541576075A451F9C0D7C86 /* ArcCannon.swift in Sources */,
-				9FF0E2D3EB8346B19417F0AC /* WaveManager.swift in Sources */,
-				90E7D502D748436FBB2497E3 /* EconomyManager.swift in Sources */,
-				94D59AFD8A754E7D94F57E2E /* SaveSlot.swift in Sources */,
-				8DEFEDAF756F4C48AB87AFAE /* SaveManager.swift in Sources */,
-				CAE7A8F81082490C9C7AFD0B /* SettingsStore.swift in Sources */,
-				C49583F3B7704745800AD911 /* AudioManager.swift in Sources */,
-				5BAEE1AA4C564E08BE2258FA /* MapLayouts.swift in Sources */,
-				448A10C2B7F44BC9B14C739E /* NavGrid.swift in Sources */,
-				CA90CAAD0F37494CA9752003 /* MapModel.swift in Sources */,
-				194A2D440A90479F9CF54AD9 /* HitscanResolver.swift in Sources */,
-				23CE75B01D914BDEA7A77F2A /* WallTextureCache.swift in Sources */,
-				3C6218EAC83D48D0A1FC5A6A /* RaycastRenderer.swift in Sources */,
-				7716A918D06E42789417C94D /* BillboardRenderer.swift in Sources */,
-				7DAF772652314191A0B6B662 /* WeaponViewModel.swift in Sources */,
-				71033BA2A44F4543BF12EDE3 /* GameScene.swift in Sources */,
-				60CC63A733F04A96B16142C1 /* ShopScene.swift in Sources */,
-				184D4B9083D84C23ADD95214 /* MainMenuScene.swift in Sources */,
-				927B6C714F5149D49A9A0F25 /* MapSelectScene.swift in Sources */,
-				7BFC6488135846ACA1388C86 /* LoadGameScene.swift in Sources */,
-				D95A45DDA87046758BB605B5 /* SettingsScene.swift in Sources */,
-				4666975B79AC49349265FD6C /* PauseMenuScene.swift in Sources */,
-				EA353D75AB92419ABA21AC95 /* HUD.swift in Sources */,
+				4BE80E2DC32D4CD2B9AB8CCB /* ZombieSurvivalApp.swift in Sources */,
+				F3508E95A1C84A3681F14AA5 /* GameContainerView.swift in Sources */,
+				E62D887B04DE425A845D34EB /* Balance.swift in Sources */,
+				4CAD6F0345064A01B4A6F2C7 /* RaycasterConfig.swift in Sources */,
+				59F5F8AB69DA4AEE8629F223 /* Geometry.swift in Sources */,
+				DAD9B742FC03487EA2AC5648 /* AssetProvider.swift in Sources */,
+				A68A612B9B1849FD888D69E0 /* GameState.swift in Sources */,
+				E2DFF24EA371497AA0A034B5 /* ControlScheme.swift in Sources */,
+				BC2E027973F64BEDBE293FAD /* VirtualJoystick.swift in Sources */,
+				19F23A2C3ED948169D5892E9 /* FPSControls.swift in Sources */,
+				5387DA1789F74D75B8FEE39F /* Weapon.swift in Sources */,
+				AE635510E29D4898B4EF8760 /* Player.swift in Sources */,
+				D2849FCEDB364E8A918144DC /* Bullet.swift in Sources */,
+				7E94370131C44CBD84637EAD /* Enemy.swift in Sources */,
+				2760293620C1491E9B337D17 /* Walker.swift in Sources */,
+				AFCBFB385E4D4489BE635DDB /* WeaponInventory.swift in Sources */,
+				FF94BFBE2F3640E8ACF923D2 /* Perk.swift in Sources */,
+				8E290ED110C84A4982D0F191 /* CoinPickup.swift in Sources */,
+				B37FFFE35B1E4428B4ED78FB /* Pickup.swift in Sources */,
+				025FF6CDA54F41E9A0975C61 /* SMG.swift in Sources */,
+				7A1BFE865CC646E99FDE83EF /* Shotgun.swift in Sources */,
+				00AA5A2B3E054F6BB04B1FA4 /* AssaultRifle.swift in Sources */,
+				66D2AD63ABFB473E9638F9D9 /* Sniper.swift in Sources */,
+				0681408336C740FEB2D48FAA /* LMG.swift in Sources */,
+				AA26FD5F2DC645D3A130F16A /* GrenadeLauncher.swift in Sources */,
+				EC0E735BCCD147D8A0C587C8 /* ArcCannon.swift in Sources */,
+				F8407C7D210B48B7BEBF3A28 /* WaveManager.swift in Sources */,
+				4E9FC039503F4373A51F6E9A /* EconomyManager.swift in Sources */,
+				D6260C930B8A46BABBD761A0 /* SaveSlot.swift in Sources */,
+				C71C2F321FC94BF5A230EA0C /* SaveManager.swift in Sources */,
+				D2BBA25AB5144F6DBACCF739 /* SettingsStore.swift in Sources */,
+				B6B5018D860B48FC8827B77B /* AudioManager.swift in Sources */,
+				1F8CB065D3EC4B7C95D921AA /* MapLayouts.swift in Sources */,
+				0AC75DA9E9684AA9A1A09770 /* NavGrid.swift in Sources */,
+				198F51061A51402A8CDE3BFB /* MapModel.swift in Sources */,
+				9238902FCFCE402AA226C0CC /* HitscanResolver.swift in Sources */,
+				1A0E19D153194C44919CC1ED /* PickupDirector.swift in Sources */,
+				1B4ADEF5789E4C73A81BD8A8 /* WallTextureCache.swift in Sources */,
+				394257EEEFB240AA8490B995 /* RaycastRenderer.swift in Sources */,
+				BBEA103771444BA787779314 /* BillboardRenderer.swift in Sources */,
+				456539D91A3041FDB5D6AC7D /* WeaponViewModel.swift in Sources */,
+				5A9229539F754A4B97CEDE16 /* GameScene.swift in Sources */,
+				55241EBC1BE64451A7AEAADC /* ShopScene.swift in Sources */,
+				48CBD205083D4314A3B62549 /* MainMenuScene.swift in Sources */,
+				8303525590EB4F88BD4C9FFC /* MapSelectScene.swift in Sources */,
+				16479DD1389443D48386C5AA /* LoadGameScene.swift in Sources */,
+				04E6646D3F3342AC8854EF94 /* SettingsScene.swift in Sources */,
+				F6EFFE96635B4D8D91531D31 /* PauseMenuScene.swift in Sources */,
+				941A241986A346BB89723162 /* HUD.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		EE98021379914868972EFFA6 /* Debug */ = {
+		7DCCC096BF9C4A659BB6E87F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -452,7 +460,7 @@
 			};
 			name = Debug;
 		};
-		2FA2097A28E2494BABEB1D91 /* Release */ = {
+		29FF56C9C46F451D9C7FBFBC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -508,7 +516,7 @@
 			};
 			name = Release;
 		};
-		C57BB101BA8543DEAF97E4DF /* Debug */ = {
+		0870FAB721BD414E81D4D109 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -537,7 +545,7 @@
 			};
 			name = Debug;
 		};
-		401E75B4156045B6A65B36E7 /* Release */ = {
+		CBBC68CF7A6D49F5BEF1FB7D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -569,25 +577,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D514EDEABC7E4BF5B7F77623 /* Build configuration list for PBXProject "ZombieSurvival" */ = {
+		5558330A87CE45D79B1CBAFD /* Build configuration list for PBXProject "ZombieSurvival" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				EE98021379914868972EFFA6 /* Debug */,
-				2FA2097A28E2494BABEB1D91 /* Release */,
+				7DCCC096BF9C4A659BB6E87F /* Debug */,
+				29FF56C9C46F451D9C7FBFBC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BFF6C3EF13A44131975B6FD4 /* Build configuration list for PBXNativeTarget "ZombieSurvival" */ = {
+		32C393EBE49A4814989F8B43 /* Build configuration list for PBXNativeTarget "ZombieSurvival" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C57BB101BA8543DEAF97E4DF /* Debug */,
-				401E75B4156045B6A65B36E7 /* Release */,
+				0870FAB721BD414E81D4D109 /* Debug */,
+				CBBC68CF7A6D49F5BEF1FB7D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = F673F2FAC255454BB63F98F9 /* Project object */;
+	rootObject = D2944CD6510B4EC1A4C6B732 /* Project object */;
 }
