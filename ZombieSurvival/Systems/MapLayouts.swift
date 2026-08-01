@@ -44,7 +44,7 @@ struct ParsedMapLayout {
 ///     'S' spawn point (walkable floor, used by WaveManager)
 ///
 /// Both layouts below were checked against the design rules this system is
-/// built around before being committed, and `TileMapBuilder` re-verifies
+/// built around before being committed, and `MapModel` re-verifies
 /// the important ones (full connectivity, spawn validity) at build time:
 ///
 ///  - Fully connected: every walkable cell reaches every other walkable

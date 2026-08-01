@@ -68,6 +68,8 @@ final class SettingsStore {
         static let frameCap = "settings.frameCap"
         static let controlSchemeType = "settings.controlSchemeType"
         static let difficulty = "settings.difficulty"
+        static let lookSensitivity = "settings.lookSensitivity"
+        static let renderQuality = "settings.renderQuality"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -127,5 +129,26 @@ final class SettingsStore {
     var difficulty: Difficulty {
         get { Difficulty(rawValue: defaults.string(forKey: Keys.difficulty) ?? "") ?? .medium }
         set { defaults.set(newValue.rawValue, forKey: Keys.difficulty) }
+    }
+
+    // MARK: - First-person settings
+
+    /// Multiplier on drag-to-look turn rate. Applied live — GameScene
+    /// re-reads it every time gameplay resumes.
+    var lookSensitivity: Float {
+        get { defaults.object(forKey: Keys.lookSensitivity) as? Float ?? RaycasterConfig.defaultLookSensitivity }
+        set {
+            let clamped = min(max(newValue, RaycasterConfig.minimumLookSensitivity), RaycasterConfig.maximumLookSensitivity)
+            defaults.set(clamped, forKey: Keys.lookSensitivity)
+        }
+    }
+
+    /// How many columns the raycaster draws. This is the main performance
+    /// dial, which is why it's a player-facing setting rather than a
+    /// constant — dropping it is the first thing to try if a device can't
+    /// hold 60fps with a full horde on screen.
+    var renderQuality: RenderQuality {
+        get { RenderQuality(rawValue: defaults.string(forKey: Keys.renderQuality) ?? "") ?? .medium }
+        set { defaults.set(newValue.rawValue, forKey: Keys.renderQuality) }
     }
 }
