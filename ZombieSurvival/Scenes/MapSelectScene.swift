@@ -1,25 +1,43 @@
 import SpriteKit
 import UIKit
 
-/// Both maps are unlocked, no cost or restriction. They currently share
-/// identical arena geometry and spawn layout — the background tint below is
-/// the only visual difference right now. Selectable and fully functional,
-/// just not yet visually distinct; see the root README.
+/// Both maps are unlocked, no cost or restriction. Each has its own
+/// hand-designed layout (MapLayouts.swift) and tileset: `original` is an
+/// open outdoor yard, `facility` an indoor building of rooms and corridors.
 enum MapID: String, Codable, CaseIterable {
     case original
-    case ashyard
+    case facility
 
     var displayName: String {
         switch self {
         case .original: return "The Yard"
-        case .ashyard: return "Ashyard"
+        case .facility: return "The Facility"
         }
     }
 
     var backgroundColor: SKColor {
         switch self {
         case .original: return SKColor(red: 0.08, green: 0.10, blue: 0.08, alpha: 1.0)
-        case .ashyard: return SKColor(red: 0.14, green: 0.09, blue: 0.08, alpha: 1.0)
+        case .facility: return SKColor(red: 0.09, green: 0.11, blue: 0.12, alpha: 1.0)
+        }
+    }
+
+    /// `facility` was called `ashyard` before it was given real interior
+    /// visuals. Saves written under the old name still decode — without
+    /// this, every save made on an older build would fail to load outright
+    /// rather than just showing a renamed map.
+    init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        switch raw {
+        case "ashyard": self = .facility
+        default:
+            guard let decoded = MapID(rawValue: raw) else {
+                throw DecodingError.dataCorruptedError(
+                    in: try decoder.singleValueContainer(),
+                    debugDescription: "Unrecognized MapID \"\(raw)\""
+                )
+            }
+            self = decoded
         }
     }
 }
@@ -82,7 +100,7 @@ final class MapSelectScene: SKScene {
             contentLayer.addChild(card)
         }
 
-        let note = makeLabel("(currently identical layouts — background tint only)", fontSize: 12, color: .lightGray)
+        let note = makeLabel("(open outdoor yard vs. indoor rooms and corridors)", fontSize: 12, color: .lightGray)
         note.position = CGPoint(x: 0, y: -90)
         contentLayer.addChild(note)
     }

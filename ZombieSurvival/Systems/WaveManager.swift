@@ -25,12 +25,66 @@ final class WaveManager {
     private var pendingSpawnCount: Int = 0
     private var aliveEnemies: Set<ObjectIdentifier> = []
     private var lastSpawnTime: TimeInterval = 0
-    private let spawnPoints: [CGPoint]
+
+    /// Spawn points that have been checked against the map's solid
+    /// geometry. Spawning into a wall used to wedge a zombie permanently:
+    /// collision resolution would reject every direction it tried, so it
+    /// stood still forever and the round could never end.
+    private var validatedSpawnPoints: [CGPoint] = []
+    private var solidRects: [CGRect] = []
 
     var aliveCount: Int { aliveEnemies.count }
+    var spawnPointCount: Int { validatedSpawnPoints.count }
 
-    init(spawnPoints: [CGPoint]) {
-        self.spawnPoints = spawnPoints
+    /// Supplies the map's spawn points and solid geometry. Every point is
+    /// verified to be clear of solid tiles; one that isn't gets nudged to
+    /// the nearest free spot rather than silently dropped, so a map never
+    /// quietly loses a spawn corner and starts funnelling every zombie in
+    /// from one side.
+    func configureSpawning(spawnPoints: [CGPoint], solidRects: [CGRect], bounds: CGRect) {
+        self.solidRects = solidRects
+        let radius = Balance.zombieRadius
+
+        validatedSpawnPoints = spawnPoints.compactMap { point in
+            if !circleIntersectsAnyRect(center: point, radius: radius, rects: solidRects) {
+                return point
+            }
+            if let relocated = nearestFreePosition(near: point, radius: radius, bounds: bounds) {
+                print("ℹ️ Spawn point \(point) was inside solid geometry; relocated to \(relocated).")
+                return relocated
+            }
+            print("⚠️ Spawn point \(point) is inside solid geometry and no free spot was found nearby — dropping it.")
+            return nil
+        }
+
+        if validatedSpawnPoints.count < Balance.minimumValidSpawnPoints {
+            let message = """
+                Only \(validatedSpawnPoints.count) valid spawn point(s) survived collision filtering \
+                (need at least \(Balance.minimumValidSpawnPoints)). The map layout is broken — \
+                spawn markers are buried in walls or obstacles. Check MapLayouts.swift.
+                """
+            print("⚠️ \(message)")
+            assertionFailure(message)
+        }
+    }
+
+    /// Rings outward looking for a position where a zombie-sized circle
+    /// fits. Sample count grows with the ring so coverage stays even as
+    /// the circumference grows.
+    private func nearestFreePosition(near point: CGPoint, radius: CGFloat, bounds: CGRect) -> CGPoint? {
+        for ring in 1...Balance.spawnSearchMaxRings {
+            let distance = CGFloat(ring) * Balance.spawnSearchRingStep
+            let sampleCount = ring * 8
+            for sample in 0..<sampleCount {
+                let angle = (CGFloat(sample) / CGFloat(sampleCount)) * 2 * .pi
+                let candidate = CGPoint(x: point.x + cos(angle) * distance, y: point.y + sin(angle) * distance)
+                guard bounds.insetBy(dx: radius, dy: radius).contains(candidate) else { continue }
+                if !circleIntersectsAnyRect(center: candidate, radius: radius, rects: solidRects) {
+                    return candidate
+                }
+            }
+        }
+        return nil
     }
 
     func startNextRound() {
@@ -65,10 +119,12 @@ final class WaveManager {
     }
 
     private func spawnOne(currentTime: TimeInterval) {
+        guard let spawnPoint = validatedSpawnPoints.randomElement() else { return }
+
         let health = Balance.zombieHealth(forRound: currentRound) * difficulty.multiplier
         let contactDamage = Balance.zombieContactDamage * difficulty.multiplier
         let walker = Walker(health: health, contactDamage: contactDamage, zombieVariant: Int.random(in: 1...4))
-        walker.position = spawnPoints.randomElement() ?? .zero
+        walker.position = spawnPoint
 
         aliveEnemies.insert(ObjectIdentifier(walker.node))
         pendingSpawnCount -= 1

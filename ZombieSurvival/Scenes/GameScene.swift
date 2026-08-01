@@ -17,6 +17,14 @@ final class GameScene: SKScene {
     /// resolve their movement against this via Geometry.swift's
     /// resolveCollision.
     private var solidRects: [CGRect] = []
+    /// Shared enemy navigation grid for the current map. One flow field
+    /// serves every zombie; see NavGrid.
+    private var navGrid: NavGrid?
+    /// The arena's world bounds (the layout rect), which is what the
+    /// player is clamped to — not the raw scene size, since the layout is
+    /// scaled to fit and can be slightly smaller than the screen.
+    private var arenaBounds: CGRect = .zero
+    private var mapSpawnPoints: [CGPoint] = []
 
     private var lastUpdateTime: TimeInterval = 0
     /// Scene-local clock that only advances while unpaused. Every gameplay
@@ -96,6 +104,9 @@ final class GameScene: SKScene {
         let result = TileMapBuilder.build(for: startingMapID, size: size)
         worldLayer.addChild(result.node)
         solidRects = result.solidRects
+        navGrid = result.navGrid
+        arenaBounds = result.worldRect
+        mapSpawnPoints = result.spawnPoints
     }
 
     private func setupPlayer() {
@@ -118,18 +129,14 @@ final class GameScene: SKScene {
         hud.showPauseButton()
     }
 
+    /// Spawn points come from the map layout's 'S' markers (perimeter,
+    /// spread along all four edges) and are validated against the map's
+    /// solid geometry — see WaveManager.configureSpawning.
     private func setupWaveManager() {
-        let inset: CGFloat = 60
-        let halfWidth = size.width / 2 - inset
-        let halfHeight = size.height / 2 - inset
-        let spawnPoints = [
-            CGPoint(x: -halfWidth, y: halfHeight), CGPoint(x: 0, y: halfHeight), CGPoint(x: halfWidth, y: halfHeight),
-            CGPoint(x: -halfWidth, y: -halfHeight), CGPoint(x: 0, y: -halfHeight), CGPoint(x: halfWidth, y: -halfHeight),
-            CGPoint(x: -halfWidth, y: 0), CGPoint(x: halfWidth, y: 0)
-        ]
-        waveManager = WaveManager(spawnPoints: spawnPoints)
+        waveManager = WaveManager()
         waveManager.delegate = self
         waveManager.difficulty = startingDifficulty
+        waveManager.configureSpawning(spawnPoints: mapSpawnPoints, solidRects: solidRects, bounds: arenaBounds)
     }
 
     /// Restores everything a save needs, always onto freshly-constructed
@@ -182,6 +189,9 @@ final class GameScene: SKScene {
 
         updatePlayer(deltaTime: deltaTime, currentTime: gameClock)
         updateBullets(deltaTime: deltaTime)
+        // Cheap no-op unless the player just crossed a tile boundary, in
+        // which case one BFS re-routes the entire horde at once.
+        navGrid?.updateFlowField(playerPosition: player.position)
         updateEnemies(deltaTime: deltaTime, currentTime: gameClock)
         updateCoins(deltaTime: deltaTime)
         waveManager.update(currentTime: gameClock)
@@ -196,8 +206,7 @@ final class GameScene: SKScene {
     }
 
     private func updatePlayer(deltaTime: TimeInterval, currentTime: TimeInterval) {
-        let bounds = CGRect(x: -size.width / 2, y: -size.height / 2, width: size.width, height: size.height)
-        player.move(by: controlScheme.movementVector, deltaTime: deltaTime, bounds: bounds, solidRects: solidRects)
+        player.move(by: controlScheme.movementVector, deltaTime: deltaTime, bounds: arenaBounds, solidRects: solidRects)
 
         let aimVector = controlScheme.aimVector
         if !aimVector.isZero {
@@ -316,7 +325,10 @@ final class GameScene: SKScene {
 
     private func updateEnemies(deltaTime: TimeInterval, currentTime: TimeInterval) {
         for enemy in enemies where enemy.isAlive {
-            enemy.update(currentTime: currentTime, deltaTime: deltaTime, playerPosition: player.position, solidRects: solidRects)
+            enemy.update(
+                currentTime: currentTime, deltaTime: deltaTime,
+                playerPosition: player.position, solidRects: solidRects, navGrid: navGrid
+            )
             let contactDistance = Balance.zombieRadius + Balance.playerRadius
             if distance(enemy.position, player.position) < contactDistance, enemy.canAttack(at: currentTime) {
                 enemy.registerAttack(at: currentTime)

@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7DE242E52EAA4AF49AEC50C5"
+               BlueprintIdentifier = "E72C0E85C2CD4E1E836DF779"
                BuildableName = "ZombieSurvival.app"
                BlueprintName = "ZombieSurvival"
                ReferencedContainer = "container:ZombieSurvival.xcodeproj">
@@ -44,7 +44,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7DE242E52EAA4AF49AEC50C5"
+            BlueprintIdentifier = "E72C0E85C2CD4E1E836DF779"
             BuildableName = "ZombieSurvival.app"
             BlueprintName = "ZombieSurvival"
             ReferencedContainer = "container:ZombieSurvival.xcodeproj">
@@ -61,7 +61,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7DE242E52EAA4AF49AEC50C5"
+            BlueprintIdentifier = "E72C0E85C2CD4E1E836DF779"
             BuildableName = "ZombieSurvival.app"
             BlueprintName = "ZombieSurvival"
             ReferencedContainer = "container:ZombieSurvival.xcodeproj">
