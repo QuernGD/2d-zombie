@@ -89,29 +89,45 @@ final class Walker: SKNode, Enemy {
         fatalError("init(coder:) has not been implemented")
     }
 
-    /// Straight-line pursuit, blocked by walls/obstacles via
-    /// resolveCollision (Geometry.swift) — sufficient for a single open
-    /// arena with scattered obstacles; swap this for real pathfinding
-    /// (routing around obstacles rather than just stopping/sliding at
-    /// them) without touching anything outside this method.
-    func update(currentTime: TimeInterval, deltaTime: TimeInterval, playerPosition: CGPoint, solidRects: [CGRect]) {
+    /// Pursuit in two layers: the NavGrid flow field decides *which way to
+    /// go* (routing around walls and cover), and resolveCollision handles
+    /// the last few pixels so the walker slides along edges instead of
+    /// catching on them.
+    ///
+    /// When the player is in line of sight the flow field is skipped in
+    /// favour of walking straight at them — grid-derived vectors are
+    /// axis-aligned and look robotic in open space, and there's nothing to
+    /// route around anyway.
+    func update(
+        currentTime: TimeInterval,
+        deltaTime: TimeInterval,
+        playerPosition: CGPoint,
+        solidRects: [CGRect],
+        navGrid: NavGrid?
+    ) {
         guard isAlive else { return }
         // Let a hit/knocked reaction play out undisturbed, same idea as the
         // old one-shot attack animation: brief hit-stun while it plays.
         guard !isPlayingReactionAnimation else { return }
 
-        let dx = playerPosition.x - position.x
-        let dy = playerPosition.y - position.y
-        let dist = sqrt(dx * dx + dy * dy)
-        guard dist > 1 else {
+        let toPlayer = CGVector(dx: playerPosition.x - position.x, dy: playerPosition.y - position.y)
+        guard toPlayer.length > 1 else {
             playAnimation(.idle)
             return
         }
+
+        var direction = toPlayer.normalized
+        if let navGrid,
+           !navGrid.hasLineOfSight(from: position, to: playerPosition),
+           let routed = navGrid.flowDirection(at: position) {
+            direction = routed
+        }
+
         let step = moveSpeed * CGFloat(deltaTime)
-        let attempted = CGPoint(x: position.x + dx / dist * step, y: position.y + dy / dist * step)
+        let attempted = CGPoint(x: position.x + direction.dx * step, y: position.y + direction.dy * step)
         position = resolveCollision(from: position, to: attempted, radius: Balance.zombieRadius, solidRects: solidRects)
-        if let visualSprite, abs(dx) > 0.01 {
-            visualSprite.xScale = (dx < 0 ? -1 : 1) * abs(visualSprite.xScale)
+        if let visualSprite, abs(direction.dx) > 0.01 {
+            visualSprite.xScale = (direction.dx < 0 ? -1 : 1) * abs(visualSprite.xScale)
         }
         playAnimation(.run)
     }

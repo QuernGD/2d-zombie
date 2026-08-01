@@ -259,113 +259,82 @@ enum Balance {
     static let itemFrameCount = 7
     static let itemFrameTime: TimeInterval = 0.15
 
-    // MARK: - Phase 4: Tile-based arenas
+    // MARK: - Tile-based arenas
     // Neither tileset ships with a documented tile-index legend, so these
-    // column/row picks are a best-effort visual guess made by eyeballing the
-    // sheets — flag for manual verification/adjustment in Xcode, not exact.
+    // column/row picks are a best-effort visual read of an annotated
+    // (column,row-labelled) render of each sheet — good, but not verified
+    // in a running build. See the Phase 8 README section for the specific
+    // ones most worth double-checking by eye in Xcode.
     //
-    // Phase 7 re-verified every coordinate below against an actual
-    // annotated (row,column-labeled) render of both sheets rather than
-    // eyeballing a thumbnail — this caught two real mistakes from Phase 4:
-    // wastelandWallTile (6,14) was actually a wood crate, and
-    // interiorWallTile (0,5) was actually the floor's baseboard trim, not
-    // a wall. Both are corrected below. Still a best-effort visual read,
-    // not pixel-verified in Xcode — see the Phase 7 README section.
+    // The *arrangement* of each map no longer lives here at all: layouts
+    // are hand-editable ASCII grids in MapLayouts.swift. What's left here
+    // is purely "which tile art draws each kind of cell".
 
+    /// Source resolution of the tilesheets — used for slicing them, not
+    /// for on-screen size (TileMapBuilder scales tiles to fit the layout
+    /// to the screen).
     static let tileSize: Int = 32
 
     static let wastelandFloorTile = TileCoord(column: 0, row: 1)
-    /// A handful of plain/cracked dirt variants (all confirmed non-road
-    /// tiles) so the floor isn't one single repeated tile — picked
-    /// per-cell at build time for a less uniform, less "block-y" ground.
+    /// Plain/cracked dirt variants so the ground isn't one repeated tile.
+    /// Columns 3-4 are deliberately excluded — those are the road strip
+    /// with a painted centre line, which tiles badly as open ground.
     static let wastelandFloorVariants: [TileCoord] = [
         TileCoord(column: 0, row: 0), TileCoord(column: 1, row: 0), TileCoord(column: 2, row: 0),
+        TileCoord(column: 0, row: 1), TileCoord(column: 1, row: 1),
         TileCoord(column: 0, row: 2), TileCoord(column: 1, row: 2),
-        TileCoord(column: 0, row: 3), TileCoord(column: 1, row: 3), TileCoord(column: 2, row: 3)
+        TileCoord(column: 0, row: 3), TileCoord(column: 1, row: 3)
     ]
-    /// The dark vertical-slat metal wall (a middle slice of the taller
-    /// (6,5)-(7,7) wall art) — corrected from Phase 4's (6,14), which was
-    /// actually a wood crate tile, not a wall.
+    /// The dark vertical-slat metal fence/wall (a middle slice of the
+    /// taller (6,5)-(7,7) art).
     static let wastelandWallTile = TileCoord(column: 6, row: 6)
-    /// Small single-tile clutter (barrel/crate/tire) — the loose scatter
-    /// still used alongside the bigger named structures below.
-    static let wastelandObstacleTiles: [TileCoord] = [
-        TileCoord(column: 4, row: 7), TileCoord(column: 4, row: 8), TileCoord(column: 6, row: 9), TileCoord(column: 4, row: 6)
+    /// Single-tile cover props: crates, barrels, a tyre stack.
+    static let wastelandPropTiles: [TileCoord] = [
+        TileCoord(column: 4, row: 5), TileCoord(column: 4, row: 6),
+        TileCoord(column: 4, row: 7), TileCoord(column: 4, row: 8),
+        TileCoord(column: 4, row: 9)
     ]
-    static let wastelandObstacleLayout: [(CGFloat, CGFloat)] = [
-        (0.15, -0.30), (-0.10, 0.05), (0.36, 0.30), (-0.22, -0.15)
-    ]
-
-    /// Named multi-tile "real objects" (cars, crate stacks, a gas pump)
-    /// stamped onto the map as solid cover — see MapStructure/TileMapBuilder.
-    /// Each vehicle is treated as a uniform 4x2 block for simplicity; the
-    /// source art's cab silhouette leaves one corner transparent on some
-    /// vehicles, which just reads as a small gap in the roof — flagged for
-    /// a look in Xcode, not a functional problem (transparent, not solid-
-    /// looking-but-walkable).
-    static let wastelandRedTruck = MapStructure(origin: TileCoord(column: 0, row: 5), width: 4, height: 2)
-    static let wastelandBlueTruck = MapStructure(origin: TileCoord(column: 0, row: 7), width: 4, height: 2)
-    static let wastelandMaroonCar = MapStructure(origin: TileCoord(column: 0, row: 9), width: 4, height: 2)
-    static let wastelandBlackCar = MapStructure(origin: TileCoord(column: 0, row: 11), width: 4, height: 2)
-    static let wastelandCrateCluster = MapStructure(origin: TileCoord(column: 4, row: 13), width: 2, height: 2)
-    static let wastelandGasPump = MapStructure(origin: TileCoord(column: 4, row: 12), width: 2, height: 1)
-
-    /// (anchor fraction, structure) placements for "The Yard" — spread
-    /// across quadrants, kept clear of the 8 fixed spawn points (roughly
-    /// ±0.425 fraction from center) and of each other.
-    static let wastelandStructurePlacements: [((CGFloat, CGFloat), MapStructure)] = [
-        ((-0.30, 0.15), wastelandRedTruck),
-        ((0.30, -0.20), wastelandBlueTruck),
-        ((0.05, 0.32), wastelandMaroonCar),
-        ((-0.05, -0.32), wastelandBlackCar),
-        ((-0.32, -0.10), wastelandCrateCluster),
-        ((0.32, 0.15), wastelandGasPump)
+    /// Top-left corners of 2x2 vehicle sprites. Any 2x2 obstacle cluster
+    /// in the layout is drawn as one of these instead of four loose props,
+    /// which is what puts actual cars on the map as cover.
+    static let wastelandVehicleOrigins: [TileCoord] = [
+        TileCoord(column: 0, row: 5), TileCoord(column: 0, row: 7),
+        TileCoord(column: 0, row: 9), TileCoord(column: 0, row: 11)
     ]
 
     static let interiorFloorTile = TileCoord(column: 0, row: 1)
-    /// Subtle floor variety — all plain, confirmed non-decorative-trim
-    /// tiles (unlike Phase 4's original interiorWallTile mistake below).
+    /// Plain grey-teal floor only — rows 3+ in these columns are a large
+    /// shutter door, and row 0 is the baseboard trim, so both are excluded.
     static let interiorFloorVariants: [TileCoord] = [
         TileCoord(column: 0, row: 1), TileCoord(column: 1, row: 1), TileCoord(column: 2, row: 1),
         TileCoord(column: 0, row: 2), TileCoord(column: 1, row: 2), TileCoord(column: 2, row: 2)
     ]
-    /// A plain grey server-rack-panel slice standing in for a wall (this
-    /// sheet has no dedicated wall/brick art at all) — corrected from
-    /// Phase 4's (0,5), which was actually the floor's baseboard trim, not
-    /// a wall. Deliberately not the same tile as any furniture cluster
-    /// below, so the border ring doesn't visually double as "part of" a
-    /// nearby wardrobe/cabinet.
+    /// A plain grey server-rack panel standing in for a wall — this sheet
+    /// genuinely has no brick/wall art, so a neutral full-height fixture
+    /// stands in. Deliberately different from every prop tile below so the
+    /// room walls don't read as furniture.
     static let interiorWallTile = TileCoord(column: 0, row: 9)
-    /// Small single-tile clutter (short drawer units).
-    static let interiorObstacleTiles: [TileCoord] = [
-        TileCoord(column: 4, row: 14), TileCoord(column: 5, row: 14)
+    /// Single-tile cover props: low drawer units and a shelving stack.
+    static let interiorPropTiles: [TileCoord] = [
+        TileCoord(column: 4, row: 14), TileCoord(column: 5, row: 14), TileCoord(column: 7, row: 11)
     ]
-    static let interiorObstacleLayout: [(CGFloat, CGFloat)] = [
-        (0.15, 0.05), (-0.15, -0.05), (0.05, -0.35)
-    ]
+    /// Interior has no 2x2 vehicle equivalent; 2x2 clusters (if a layout
+    /// ever adds one) fall back to loose single-tile props.
+    static let interiorVehicleOrigins: [TileCoord] = []
 
-    /// Named multi-tile furniture clusters — real rooms/furniture instead
-    /// of a single repeated obstacle tile.
-    static let interiorWardrobeCluster = MapStructure(origin: TileCoord(column: 1, row: 7), width: 2, height: 2)
-    static let interiorCabinetCluster = MapStructure(origin: TileCoord(column: 3, row: 7), width: 2, height: 2)
-    static let interiorPoolTable = MapStructure(origin: TileCoord(column: 6, row: 13), width: 2, height: 2)
-    static let interiorBedPair = MapStructure(origin: TileCoord(column: 3, row: 15), width: 2, height: 2)
-    static let interiorDeskCluster = MapStructure(origin: TileCoord(column: 0, row: 11), width: 2, height: 2)
-    /// Three vending machines side by side — a small "break room" row.
-    static let interiorVendingRow = MapStructure(origin: TileCoord(column: 4, row: 11), width: 3, height: 2)
+    // MARK: - Navigation & spawning
 
-    /// (anchor fraction, structure) placements for the Interior map —
-    /// same spread/clearance reasoning as Wasteland above. vendingRow is
-    /// 3 tiles wide, so its anchor sits further from the (0, ±0.425)
-    /// spawn points to leave clearance on both sides.
-    static let interiorStructurePlacements: [((CGFloat, CGFloat), MapStructure)] = [
-        ((-0.30, 0.20), interiorWardrobeCluster),
-        ((0.30, 0.20), interiorCabinetCluster),
-        ((0.00, -0.28), interiorVendingRow),
-        ((-0.30, -0.20), interiorPoolTable),
-        ((0.30, -0.05), interiorBedPair),
-        ((-0.05, 0.32), interiorDeskCluster)
-    ]
+    /// Line-of-sight is sampled every `tile * this` points. Half a tile is
+    /// fine enough to never miss a 1-tile-thick obstacle and cheap enough
+    /// to run for every zombie every frame.
+    static let navLineOfSightSampleFraction: CGFloat = 0.5
+    /// Below this many usable spawn points the map layout is considered
+    /// broken and WaveManager complains loudly instead of limping along.
+    static let minimumValidSpawnPoints = 3
+    /// Ring spacing (in points) for the outward search that relocates a
+    /// spawn point found to be inside solid geometry.
+    static let spawnSearchRingStep: CGFloat = 16
+    static let spawnSearchMaxRings = 12
 
     // MARK: - Phase 4: UI panels & health bar art
 
@@ -382,19 +351,9 @@ enum Balance {
 /// (Int, Int) tuples work but their labels don't survive assignment through
 /// differently-typed call sites cleanly, so this is used everywhere a tile
 /// coordinate is passed around instead.
-struct TileCoord {
+/// Hashable is declared here rather than in an extension elsewhere because
+/// Swift only synthesizes it in the file the type is defined in.
+struct TileCoord: Hashable {
     let column: Int
     let row: Int
-}
-
-/// A named multi-tile "real object" (a car, a crate stack, a row of
-/// vending machines) stamped onto a map: a rectangular block of
-/// `width` x `height` tiles read starting at `origin` in the theme's
-/// sheet — every sheet cell in that rectangle happened to line up
-/// contiguously for every structure defined below, so no per-cell shape
-/// list is needed. Every tile in the rectangle is rendered and solid.
-struct MapStructure {
-    let origin: TileCoord
-    let width: Int
-    let height: Int
 }

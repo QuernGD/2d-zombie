@@ -15,7 +15,13 @@ protocol Enemy: AnyObject {
     var attackCooldown: TimeInterval { get }
     var isAlive: Bool { get }
 
-    func update(currentTime: TimeInterval, deltaTime: TimeInterval, playerPosition: CGPoint, solidRects: [CGRect])
+    func update(
+        currentTime: TimeInterval,
+        deltaTime: TimeInterval,
+        playerPosition: CGPoint,
+        solidRects: [CGRect],
+        navGrid: NavGrid?
+    )
     func takeDamage(_ amount: CGFloat)
     func canAttack(at time: TimeInterval) -> Bool
     func registerAttack(at time: TimeInterval)

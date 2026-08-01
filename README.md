@@ -10,10 +10,10 @@ Phase 2's placeholder/skeleton art with a full spritesheet-based art pack:
 real Player/Zombie(x4) character animations, weapon fire animations,
 tile-based arenas for both maps, 9-sliced UI panels, and a real coin icon.
 Phase 5 added a CI pipeline that builds an unsigned, sideloadable IPA on
-every push. Phase 6 (this pass) adds real wall/obstacle collision to both
-maps (with genuinely different obstacle layouts per map), and fixes a
-dual-stick control bug where the move and fire sticks couldn't be held at
-the same time.
+every push. Phase 6 added wall/obstacle collision and fixed a dual-stick
+control bug. Phase 8 (this pass) replaces the procedural map layouts with
+hand-designed ASCII arenas, gives enemies real flow-field pathfinding, and
+fixes zombies spawning inside solid geometry.
 
 ## Running it
 
@@ -387,11 +387,9 @@ and a handful of scattered obstacle tiles at fixed fractional positions.
 below for how collision was added.
 
 Map-to-tileset assignment: `.original` ("The Yard") → Wasteland,
-`.ashyard` ("Ashyard") → Interior. Both maps now have genuinely different
-geometry, unlike Phase 3 (background tint only). One naming quirk worth
-flagging: "Ashyard" implies an outdoor space but is mapped to the *indoor*
-tileset (Wasteland was a better outdoor fit for "The Yard") — the name and
-the visuals no longer quite agree; a rename is the natural follow-up.
+`.facility` ("The Facility") → Interior. Both maps have genuinely
+different geometry, unlike Phase 3 (background tint only). The map was
+called "Ashyard" until Phase 8 renamed it to match its indoor visuals.
 
 ### UI: 9-sliced panels + health bar
 
@@ -470,12 +468,10 @@ parallel system:
 - Both `Player.move` and `Walker.update` call it with their own radius
   (`Balance.playerRadius` / `Balance.zombieRadius`).
 
-**Scope note**: this covers player/zombie movement only, since that's
-what was asked for. Bullets still pass through walls (Bullet has no
-notion of the map), and Walker still walks in a straight line at the
-player rather than pathfinding around an obstacle — it just stops/slides
-at one, same as the player. Both are called out in "What's stubbed" above
-as deliberate scope cuts, not oversights.
+**Scope note**: this covers player/zombie movement only. Bullets still
+pass through walls (Bullet has no notion of the map). Enemies originally
+walked straight at the player and simply stopped when blocked — **Phase 8
+replaced that with flow-field pathfinding**; see below.
 
 ### Making the two maps genuinely different
 
@@ -529,7 +525,7 @@ multitouch bug to fix there; it's unchanged this pass.
 
 | File | Responsibility |
 |---|---|
-| `Config/Balance.swift` | Adds `MapStructure` (a named, multi-tile rectangular "real object" — a car, a crate stack, a furniture cluster), floor-variant tile arrays, corrected wall tiles, and per-map named structures + their placements. |
+| `Config/Balance.swift` | Adds `MapStructure` (a named multi-tile object), floor-variant tile arrays and corrected wall tiles. *(`MapStructure` and the fractional placements were removed again in Phase 8 — layouts now live in ASCII grids.)* |
 | `Systems/TileMapBuilder.swift` | Rewritten to composite three layers instead of one flat floor + scattered single tiles: randomized floor variants, small single-tile scatter clutter, and named multi-tile structures stamped on top (with their own solid rects). |
 
 ### The map was "just blocks scattered everywhere" — here's what changed
@@ -565,7 +561,7 @@ turned out wrong once actually verified. This pass:
 - Wall ring uses the dark vertical-slat metal wall tile (corrected from
   the wood-crate mistake).
 
-### Interior ("Ashyard") — now reads as an actual furnished space
+### Interior ("The Facility") — now reads as an actual furnished space
 
 - **6 furniture clusters**: two wardrobe/cabinet blocks, a 3-wide row of
   vending machines (a "break room"), a pool table, a pair of beds, and a
@@ -587,9 +583,132 @@ turned out wrong once actually verified. This pass:
 - **Structure placements are fixed fractional positions**, chosen to
   clear the 8 fixed spawn points and each other by eye, same as Phase 4/6's
   scatter positions — still not pixel-verified in a running build.
-- **No pathfinding around structures** — same Phase 6 scope note applies:
-  player/zombies slide along a structure's edge rather than routing around
-  it.
+- **No pathfinding around structures** — superseded by Phase 8, which
+  added a flow field so enemies route around cover properly.
+
+## Architecture — Phase 8 (new/changed this pass)
+
+| File | Responsibility |
+|---|---|
+| `Systems/MapLayouts.swift` | **New.** Hand-editable ASCII arena layouts (`.` floor, `#` wall, `X` cover, `S` spawn) + the parser that turns them into cells and spawn markers. |
+| `Systems/NavGrid.swift` | **New.** Walkability grid, BFS flow field shared by every enemy, line-of-sight sampling, and the build-time connectivity flood fill. |
+| `Systems/TileMapBuilder.swift` | Rewritten to render a parsed layout, emit solid rects + spawn points + a NavGrid, and scale tiles to fit the arena on screen. |
+| `Systems/WaveManager.swift` | Spawn points are now validated against solid geometry, relocated by outward ring search if blocked, and loudly flagged if too few survive. |
+| `Entities/Walker.swift` | Follows the flow field around obstacles; straight-line pursuit only when the player is in line of sight. |
+| `Config/Balance.swift` | Map *arrangement* constants removed (they live in ASCII now); what remains is tile-art selection plus nav/spawn tuning. |
+
+### Bug 1 — zombies spawning inside solid geometry
+
+`spawnOne` assigned `spawnPoints.randomElement()` with no validation, so a
+spawn point overlapping a wall produced a zombie that `resolveCollision`
+rejected in every direction — frozen forever, and the round could never
+end because it never died.
+
+`WaveManager.configureSpawning` now takes the map's solid rects and checks
+every point with a zombie-radius circle. A blocked point is **relocated**
+by searching outward in rings (8 samples per ring, growing with radius)
+for the nearest position that fits, rather than being silently dropped —
+otherwise a map could quietly lose a whole corner and funnel every zombie
+in from one side. If fewer than `Balance.minimumValidSpawnPoints` (3)
+survive, it prints a warning *and* trips `assertionFailure`, so a broken
+layout fails loudly in debug instead of shipping.
+
+### Bug 2 — no pathfinding, so walls were permanent shelter
+
+**Recompute strategy: one BFS flow field per player tile-crossing.**
+Rather than 25 concurrent A* searches, `NavGrid` runs a single
+breadth-first search *outward from the player's cell* across all walkable
+cells, recording for each cell a unit vector pointing at the neighbour
+that steps toward the player. Every zombie then reads one array entry —
+the cost is independent of enemy count.
+
+The BFS re-runs **only when the player's cell index changes**
+(`updateFlowField` early-outs otherwise), so it's called every frame but
+does real work perhaps a few times a second while moving, and zero times
+while standing still. On these 35×15 maps a full rebuild touches ~400
+cells, which is trivial.
+
+Details worth knowing:
+- **8-connected** so zombies move diagonally instead of stair-stepping,
+  with corner-cutting refused: a diagonal step is only allowed if both
+  adjacent orthogonal cells are also walkable, otherwise zombies clip
+  through wall corners and fight the collision resolver.
+- **Line of sight wins over the flow field.** Grid-derived vectors are
+  axis-aligned and look robotic in the open, so when
+  `hasLineOfSight(from:to:)` is clear the walker just goes straight at the
+  player. The flow field only takes over when something is actually in the
+  way.
+- **`resolveCollision` is unchanged** and still does the last few pixels
+  of sliding along edges. Flow field = routing, collision = contact.
+
+### Map redesign
+
+Layouts are now ASCII grids in `MapLayouts.swift`, editable by hand:
+
+```
+#....XX....XX....XX....XX....XX...#
+#.................................#
+#.S.............................S.#
+```
+
+Both maps were checked against every rule in the brief, and the two that
+matter most are re-verified **in code at build time**:
+`NavGrid.isFullyConnected()` flood-fills the walkable space and
+warns + asserts if anything is sealed off, and `WaveManager` validates
+every spawn point.
+
+**Connectivity flood-fill result: both maps pass.** Offline I also
+verified the stronger property that the runtime check can't cheaply cover:
+from *every one* of the 401 (Wasteland) / 395 (Facility) possible player
+cells, every walkable cell has a route to the player — so the
+corner-cutting rule never strands anything. Longest route seen was 34
+steps.
+
+One non-obvious constraint fell out of this and is worth recording,
+because it silently breaks maps: **a player/zombie collision circle is
+40pt across, but a tile renders at only ~24pt** on the smallest supported
+screen. So a 1-tile doorway is physically impassable even though the tile
+grid happily routes enemies through it — exactly the "frozen zombie" class
+of bug this phase set out to kill, in a new disguise. The Facility's
+doorways are therefore **3 tiles wide**, all corridors are ≥3 tiles, and
+spawn markers sit 2 cells in from the border (a marker hard against a wall
+would be relocated by the validator on every single round). Both layouts
+were checked by sampling the actual configuration space of a 40pt circle
+and confirming it forms one connected region containing every spawn point
+and the player's start.
+
+Layout summary:
+- **The Yard** (Wasteland): open arena, two staggered bands of 1–2 tile
+  cover with ≥3 free tiles between clusters and from the border. 2×2
+  clusters render as whole vehicles.
+- **The Facility** (Interior): two pass-through rooms, each with a 3-wide
+  doorway in the top *and* bottom wall — no single-entrance rooms — inside
+  a ring of corridors, plus side cover in the two widest corridors.
+- Both: 10 perimeter spawn points spread across all four edges, zero
+  dead-end cells (no cell has fewer than two walkable neighbours), so
+  there's nowhere to back into and be safe.
+
+### `.ashyard` renamed to `.facility`
+
+The old case name contradicted its indoor visuals. `MapID` now has a
+custom `init(from:)` that still decodes `"ashyard"` — without it, every
+save written by an older build would fail to load outright rather than
+just showing a renamed map.
+
+### Tile indices I'd double-check by eye
+
+Still unverified in a running build (no Xcode here). Most suspect:
+- **`interiorWallTile` (0,9)** — a server-rack panel standing in for a
+  wall, because this sheet has *no* wall/brick art at all. It's the
+  weakest pick in either map; if the room walls look like furniture,
+  that's why.
+- **`wastelandVehicleOrigins`** — the four 2×2 vehicle sprites assume each
+  car occupies a clean 2×2 block starting at its listed corner. If a car
+  is actually drawn 4 tiles wide, these will render as half a vehicle.
+- **`wastelandWallTile` (6,6)** — a middle slice of taller fence art, so
+  it may not tile seamlessly top-to-bottom along the border.
+- Floor variants for both maps are the safest picks (plain ground only,
+  with the road strip and baseboard trim deliberately excluded).
 
 ## Balance as implemented (Phase 1, unchanged)
 
@@ -615,9 +734,9 @@ All Phase 2 weapon/coin/overclock/perk numbers are placeholders in
   runs (Restart or a brand new run) — every run starts from Phase 2's
   baseline aside from map/difficulty. No meta-progression system was
   specified.
-- **One enemy type**, **straight-line pursuit**, **single-screen arena**,
-  **manual circle-vs-circle collision** — all unchanged from Phase 1, see
-  prior notes; none of this pass touched them.
+- **One enemy type**, **single-screen arena**, **manual circle-vs-circle
+  collision** — unchanged from Phase 1. (Straight-line pursuit was
+  replaced by flow-field pathfinding in Phase 8.)
 - **Chain (Arc Cannon) and AoE (Grenade Launcher) visuals** are minimal
   placeholder flourishes (a fading ring / a fading line) — functional, not
   polished.
@@ -636,11 +755,8 @@ All Phase 2 weapon/coin/overclock/perk numbers are placeholders in
   player/zombie movement only (what was asked for); bullet-vs-wall
   collision would be a separate, bigger change (Bullet has no concept of
   the map today) and wasn't part of this pass.
-- **No pathfinding around obstacles** — Walker still walks in a straight
-  line at the player and simply stops/slides along an obstacle's edge
-  (see Phase 6) rather than routing around it. Fine for scattered
-  obstacles in an open arena; would need real pathfinding for a maze-like
-  layout.
+- **Bullets pass through walls** — collision covers entity movement only;
+  Bullet has no notion of the map. Unchanged in Phase 8.
 - Not compiled with `xcodebuild`/Xcode in this environment (Linux, no
   Apple toolchain) — reviewed carefully by hand (including catching and
   fixing two real bugs along the way: the `didMove(to:)` re-presentation
